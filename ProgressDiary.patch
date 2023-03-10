@@ -1,0 +1,17 @@
+Index: app/src/main/java/gcp/global/jotdiary/Navigation.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/gcp/global/jotdiary/Navigation.kt b/app/src/main/java/gcp/global/jotdiary/Navigation.kt
+--- a/app/src/main/java/gcp/global/jotdiary/Navigation.kt	
++++ b/app/src/main/java/gcp/global/jotdiary/Navigation.kt	(date 1678403201221)
+@@ -139,7 +139,7 @@
+                 navController.navigateUp()
+             }
+         }
+-        
++
+         composable(
+             route = HomeRoutes.Entry.name + "?id={id}",
+             arguments = listOf(navArgument("id"){

@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "1016663790101",
+    "project_id": "jotdiary-fcb71",
+    "storage_bucket": "jotdiary-fcb71.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016663790101:android:7a5e34fd4ce4609519b41c",
+        "android_client_info": {
+          "package_name": "com.gcp.jotdiary"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1016663790101-7pppjng9p97ic2l4ge1ece01ggk17m6o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVR8QvNGY6x8Kmg9LDAJDH3XZ1j-Z9Ew0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1016663790101-7pppjng9p97ic2l4ge1ece01ggk17m6o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016663790101:android:0e904efcba5e6dae19b41c",
+        "android_client_info": {
+          "package_name": "gcp.global.jotdiary"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1016663790101-7pppjng9p97ic2l4ge1ece01ggk17m6o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVR8QvNGY6x8Kmg9LDAJDH3XZ1j-Z9Ew0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1016663790101-7pppjng9p97ic2l4ge1ece01ggk17m6o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
