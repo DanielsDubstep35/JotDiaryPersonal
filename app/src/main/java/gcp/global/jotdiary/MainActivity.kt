@@ -8,9 +8,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import gcp.global.jotdiary.controller.EntryViewmodel
-import gcp.global.jotdiary.controller.HomeViewModel
-import gcp.global.jotdiary.controller.LoginViewModel
+import gcp.global.jotdiary.controller.*
 import gcp.global.jotdiary.view.theme.JotDiaryTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,6 +18,8 @@ class MainActivity : ComponentActivity() {
             val loginViewModel = viewModel(modelClass = LoginViewModel::class.java)
             val homeViewModel = viewModel(modelClass = HomeViewModel::class.java)
             val entryViewModel = viewModel(modelClass = EntryViewmodel::class.java)
+            val diaryViewModel = viewModel(modelClass = DiaryViewmodel::class.java)
+            val diariesViewModel = viewModel(modelClass = DiariesViewmodel::class.java)
             JotDiaryTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(),
@@ -27,7 +27,9 @@ class MainActivity : ComponentActivity() {
                     Navigation(
                         loginViewModel = loginViewModel,
                         entryViewModel = entryViewModel,
-                        homeViewModel = homeViewModel
+                        homeViewModel = homeViewModel,
+                        diaryViewmodel = diaryViewModel,
+                        diariesViewmodel = diariesViewModel
                     )
                 }
             }

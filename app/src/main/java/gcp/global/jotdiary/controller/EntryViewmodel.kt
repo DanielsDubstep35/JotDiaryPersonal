@@ -4,10 +4,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
 import gcp.global.jotdiary.model.models.Entries
 import gcp.global.jotdiary.model.repository.StorageRepository
-import kotlin.random.Random
 
 class EntryViewmodel(
     private val repository: StorageRepository = StorageRepository(),
@@ -18,12 +18,10 @@ class EntryViewmodel(
     private val hasUser:Boolean
         get() = repository.hasUser()
 
+    /*
     private val user: FirebaseUser?
         get() = repository.user()
-
-    fun onTitleChange(title:String){
-        entryUiState = entryUiState.copy(title = title)
-    }
+    */
 
     fun onDescriptionChange(description:String){
         entryUiState = entryUiState.copy(description = description)
@@ -33,7 +31,7 @@ class EntryViewmodel(
         entryUiState = entryUiState.copy(mood = mood)
     }
 
-    fun onDateChange(date:String){
+    fun onDateChange(date: Timestamp){
         entryUiState = entryUiState.copy(date = date)
     }
 
@@ -41,12 +39,11 @@ class EntryViewmodel(
         entryUiState = entryUiState.copy(name = name)
     }
 
-    fun addEntry(){
+    fun addEntry(diaryId: String){
         if(hasUser){
             repository.addEntry(
-                userId = user!!.uid,
+                diaryId = diaryId,
                 name = entryUiState.name,
-                title = entryUiState.title,
                 description = entryUiState.description,
                 mood = entryUiState.mood,
                 date = entryUiState.date,
@@ -57,9 +54,8 @@ class EntryViewmodel(
     }
 
     // Whenever a new variable is added, add it here, aswell as to StorageRepository.kt, Entries.kt, and EntryUiState.kt
-    fun setEditFields(entry: Entries){
+    fun setEntryFields(entry: Entries){
         entryUiState = entryUiState.copy(
-            title = entry.diaryTitle,
             name = entry.entryName,
             description = entry.entryDescription,
             mood = entry.entryMood,
@@ -67,21 +63,23 @@ class EntryViewmodel(
         )
     }
 
-    fun getEntry(entryID:String) {
+    fun getEntry(entryId:String, diaryId: String) {
         repository.getEntry(
-            entryID = entryID,
+            diaryId = diaryId,
+            entryId = entryId,
             onError = {},
         ) {
             entryUiState = entryUiState.copy(selectedEntry = it)
-            entryUiState.selectedEntry?.let { it1 -> setEditFields(it1) }
+            entryUiState.selectedEntry?.let { it1 -> setEntryFields(it1) }
         }
     }
 
     fun updateEntry(
-        entryId: String
+        entryId: String,
+        diaryId: String
     ) {
         repository.updateEntry(
-            title = entryUiState.title,
+            diaryId = diaryId,
             name = entryUiState.name,
             description = entryUiState.description,
             mood = entryUiState.mood,
@@ -107,11 +105,10 @@ class EntryViewmodel(
 
 data class EntryUiState(
     val entryID: String = "",
-    val title: String = "",
-    val name: String = "",
-    val description: String = "",
-    val mood: Int = 0,
-    val date: String = "",
+    val name: String = "Diary Entry",
+    val description: String =  "Describe yourself :)",
+    var mood: Int = 4,
+    val date: Timestamp = Timestamp.now(),
     val entryAddedStatus:Boolean = false,
     val updateEntryStatus:Boolean = false,
     val selectedEntry:Entries? = null,

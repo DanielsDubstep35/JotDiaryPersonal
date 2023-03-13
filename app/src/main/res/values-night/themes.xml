@@ -2,8 +2,8 @@
 <resources>
 
     <style name="Theme.JotDiary" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="android:statusBarColor">@color/colorLightTheme</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@color/colorDarkTheme</item>
     </style>
 
 </resources>

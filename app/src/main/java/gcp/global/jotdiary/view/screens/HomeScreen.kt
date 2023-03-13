@@ -2,7 +2,9 @@ package gcp.global.jotdiary.view.screens
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -10,33 +12,42 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import gcp.global.jotdiary.controller.HomeUiState
 import gcp.global.jotdiary.controller.HomeViewModel
-import gcp.global.jotdiary.model.models.Entries
+import gcp.global.jotdiary.model.models.Diaries
 import gcp.global.jotdiary.model.repository.Resources
+import gcp.global.jotdiary.view.components.BottomNavigationHome
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Home(
     homeViewModel: HomeViewModel?,
-    onEntryClick: (id: String) -> Unit,
-    navToEntryPage: () -> Unit,
-    navToLoginPage: () -> Unit,
+    onDiaryClick: (id: String) -> Unit,
+    navToDiaryPage: () -> Unit,
+    navToDiaryEditPage: (id: String) -> Unit,
+    navToLoginPage: () -> Unit
 ) {
     val homeUiState = homeViewModel?.homeUiState ?: HomeUiState()
 
-    var openDialog by remember {
+    var editDiaryDialog by remember {
         mutableStateOf(false)
     }
-    var selectedEntry: Entries? by remember {
+
+    var calenderDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var selectedDiary: Diaries? by remember {
         mutableStateOf(null)
     }
 
@@ -44,41 +55,80 @@ fun Home(
     val scaffoldState = rememberScaffoldState()
 
     LaunchedEffect(key1 = Unit){
-        homeViewModel?.loadEntries()
+        homeViewModel?.loadDiaries()
     }
 
     Scaffold(
         scaffoldState = scaffoldState,
         floatingActionButton = {
-            FloatingActionButton(onClick = { navToEntryPage.invoke() }) {
+            FloatingActionButton(
+                onClick = { navToDiaryPage.invoke() },
+                backgroundColor = Color.Red
+            ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
+                    tint = MaterialTheme.colors.primary
                 )
             }
         },
+        floatingActionButtonPosition = FabPosition.Center,
+        isFloatingActionButtonDocked = true,
         topBar = {
             TopAppBar(
-                navigationIcon = {},
+                navigationIcon = {
+                    Box(
+                        modifier = Modifier
+                            .width(65.dp)
+                    ) {
+
+                    }
+                },
                 actions = {
-                    IconButton(onClick = {
-                        homeViewModel?.signOut()
-                        navToLoginPage.invoke()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.ExitToApp,
-                            contentDescription = null,
-                        )
+                    Box(
+                        modifier = Modifier
+                            .width(65.dp)
+                    ) {
+                        IconButton(onClick = {
+                            homeViewModel?.signOut()
+                            navToLoginPage.invoke()
+                        }) {
+                            Column {
+                                Icon(
+                                    imageVector = Icons.Default.ExitToApp,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colors.onSurface,
+                                    modifier = Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                )
+
+                                Text(
+                                    text = "Sign Out",
+                                    color = MaterialTheme.colors.onSurface,
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
                     }
                 },
                 title = {
-                    Text(text = "Home")
-                }
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "JotDiary",
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colors.onSurface,
+                        style = MaterialTheme.typography.body1,
+                        fontSize = 20.sp,
+                    )
+                },
+                backgroundColor = MaterialTheme.colors.primary,
             )
-        }
+        },
+        bottomBar = { BottomNavigationHome() },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            when (homeUiState.entriesList) {
+            when (homeUiState.diariesList) {
                 is Resources.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier
@@ -88,60 +138,80 @@ fun Home(
                 }
                 is Resources.Success -> {
                     LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(16.dp),
+                        columns = GridCells.Fixed(1),
+                        contentPadding = PaddingValues(4.dp),
                     ) {
                         items(
-                            homeUiState.entriesList.data ?: emptyList()
-                        ) { entry ->
-                            EntryItem(
-                                entries = entry,
+                            homeUiState.diariesList.data ?: emptyList()
+                        ) { diary ->
+                            DiaryItem(
+                                diaries = diary,
                                 onLongClick = {
-                                    openDialog = true
-                                    selectedEntry = entry
+                                    editDiaryDialog = true
+                                    selectedDiary = diary
                                 },
-                            ) {
-                                onEntryClick.invoke(entry.entryID)
-                            }
+                                onClick = {
+                                    onDiaryClick.invoke(diary.diaryId)
+                                },
+                                onDiaryEditClick = {
+                                    navToDiaryEditPage.invoke(diary.diaryId)
+                                }
+                            )
                         }
                     }
-                    AnimatedVisibility(visible = openDialog) {
+                    AnimatedVisibility(visible = editDiaryDialog) {
                         AlertDialog(
                             onDismissRequest = {
-                                openDialog = false
+                                editDiaryDialog = false
                             },
-                            title = { Text(text = "Delete Diary Entry?") },
+                            title = { Text(
+                                text = "Delete Diary Entry?",
+                                color = MaterialTheme.colors.onSurface,
+                            ) },
+                            backgroundColor = MaterialTheme.colors.primary,
                             confirmButton = {
                                 Button(
                                     onClick = {
-                                        selectedEntry?.entryID?.let {
-                                            homeViewModel?.deleteEntry(it)
+                                        selectedDiary?.diaryId?.let {
+                                            homeViewModel?.deleteDiary(it)
                                         }
-                                        openDialog = false
+                                        editDiaryDialog = false
                                     },
+                                    colors = ButtonDefaults.buttonColors(
+                                        backgroundColor = MaterialTheme.colors.onSurface
+                                    ),
+                                ) {
+                                    Text(
+                                        text = "Delete",
+                                        color = MaterialTheme.colors.primary
+                                    )
+                                }
+                            },
+                            dismissButton = {
+                                Button(
+                                    onClick = { editDiaryDialog = false },
                                     colors = ButtonDefaults.buttonColors(
                                         backgroundColor = Color.Red
                                     ),
                                 ) {
-                                    Text(text = "Delete")
-                                }
-                            },
-                            dismissButton = {
-                                Button(onClick = { openDialog = false }) {
-                                    Text(text = "Cancel")
+                                    Text(
+                                        text = "Cancel",
+                                        color = MaterialTheme.colors.onSurface
+                                    )
                                 }
                             }
                         )
                     }
+
                 }
                 else -> {
                     Text(
                         text = homeUiState
-                            .entriesList.throwable?.localizedMessage ?: "Unknown Error",
+                            .diariesList.throwable?.localizedMessage ?: "Unknown Error",
                         color = Color.Black
                     )
 
-                    Log.d("HomeScreen", "Error: ${homeUiState.entriesList.throwable?.localizedMessage}")
+                    Log.d("HomeScreen", "Error: ${homeUiState.diariesList.throwable?.localizedMessage}")
                 }
             }
         }
@@ -155,8 +225,9 @@ fun Home(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun EntryItem(
-    entries: Entries,
+fun DiaryItem(
+    diaries: Diaries,
+    onDiaryEditClick: () -> Unit,
     onLongClick: () -> Unit,
     onClick: () -> Unit,
 ) {
@@ -171,40 +242,47 @@ fun EntryItem(
         backgroundColor = MaterialTheme.colors.onBackground,
     ) {
         Column {
-            Text(
-                text = entries.diaryTitle,
-                style = MaterialTheme.typography.h6,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Clip,
-                modifier = Modifier.padding(4.dp)
-            )
-            Spacer(modifier = Modifier.size(4.dp))
-            CompositionLocalProvider(
-                LocalContentAlpha provides ContentAlpha.disabled
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
+
                 Text(
-                    text = entries.entryName,
-                    //style = MaterialTheme.typography.body1,
+                    text = diaries.diaryTitle,
+                    style = MaterialTheme.typography.h6,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(4.dp),
-                    maxLines = 4
-                )
-            }
-            Spacer(modifier = Modifier.size(4.dp))
-            CompositionLocalProvider(
-                LocalContentAlpha provides ContentAlpha.disabled
-            ) {
-                Text(
-                    text = entries.entryDate,
-                    //style = MaterialTheme.typography.body1,
-                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
-                        .padding(4.dp)
-                        .align(Alignment.End),
-                    maxLines = 4
+                        .align(Alignment.CenterVertically)
+                        .padding(8.dp)
                 )
+
+                IconButton(
+                    onClick = { onDiaryEditClick.invoke() },
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Diary",
+                        tint = MaterialTheme.colors.onSurface,
+                    )
+                }
             }
+            
+            Divider(
+                color = MaterialTheme.colors.onSurface,
+                thickness = 2.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+            
+            //Image(painter = , contentDescription = )
+            
         }
     }
 }

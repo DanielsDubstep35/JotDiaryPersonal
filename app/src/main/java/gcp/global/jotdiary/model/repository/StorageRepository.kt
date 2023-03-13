@@ -1,16 +1,19 @@
 package gcp.global.jotdiary.model.repository
 
+import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import gcp.global.jotdiary.model.models.Diaries
 import gcp.global.jotdiary.model.models.Entries
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
+const val DIARIES_COLLECTION_REF = "Diaries"
 const val ENTRIES_COLLECTION_REF = "Entries"
 
 class StorageRepository(){
@@ -21,21 +24,29 @@ class StorageRepository(){
 
     fun getUserId(): String = Firebase.auth.currentUser?.uid.orEmpty()
 
-    private val entriesRef:CollectionReference = Firebase
-        .firestore.collection(ENTRIES_COLLECTION_REF)
+    fun getDiariesRef(): CollectionReference {
+        val diariesRef = Firebase.firestore.collection(DIARIES_COLLECTION_REF)
+        return diariesRef
+    }
 
+    fun getEntriesRef(diaryId: String): CollectionReference {
+        val entriesRef = Firebase.firestore.collection(DIARIES_COLLECTION_REF).document(diaryId).collection(ENTRIES_COLLECTION_REF)
+        return entriesRef
+    }
+
+    // Entry Functions
     fun getUserEntries(
-        userId: String
+        diaryId: String
     ): Flow<Resources<List<Entries>>> = callbackFlow {
         var snapshotStateListener:ListenerRegistration? = null
 
         try {
-            snapshotStateListener = entriesRef
-                .orderBy("entryID")
-                .whereEqualTo("userId", userId)
+            snapshotStateListener = getEntriesRef(diaryId)
+                .orderBy("entryId")
                 .addSnapshotListener{ snapshot, e ->
                     val response = if (snapshot != null) {
                         val entries = snapshot.toObjects(Entries::class.java)
+                        // println(snapshot.toObjects(Entries::class.java))
                         Resources.Success(data = entries)
                     } else {
                         Resources.Failure(throwable = e)
@@ -43,7 +54,7 @@ class StorageRepository(){
                     trySend(response)
                 }
         } catch (e: Exception) {
-            trySend(Resources.Failure(e?.cause))
+            trySend(Resources.Failure(e.cause))
             e.printStackTrace()
         }
 
@@ -53,12 +64,13 @@ class StorageRepository(){
     }
 
     fun getEntry(
-        entryID: String,
+        diaryId: String,
+        entryId: String,
         onError: (Throwable?) -> Unit,
         onSuccess: (Entries?) -> Unit
     ) {
-        entriesRef
-            .document(entryID)
+        getEntriesRef(diaryId)
+            .document(entryId)
             .get()
             .addOnSuccessListener {
                 onSuccess.invoke(it?.toObject(Entries::class.java))
@@ -70,25 +82,24 @@ class StorageRepository(){
     }
 
     fun addEntry(
-        userId: String,
-        title: String,
+        diaryId: String,
         name: String,
         description: String,
         mood: Int,
-        date: String,
+        date: Timestamp,
         onComplete: (Boolean) -> Unit
     ) {
-        val documentId = entriesRef.document().id
+        val documentId = getEntriesRef(diaryId).document().id
+
+        Log.d("StorageRepository", "Your diaryId is: $diaryId")
         val entry = Entries(
-            userId = userId,
-            entryID = documentId,
-            diaryTitle = title,
+            entryId = documentId,
             entryName = name,
             entryDescription = description,
             entryMood = mood,
             entryDate = date
         )
-        entriesRef
+        getEntriesRef(diaryId)
             .document(documentId)
             .set(entry)
             .addOnCompleteListener { result ->
@@ -98,10 +109,11 @@ class StorageRepository(){
     }
 
     fun deleteEntry(
+        diaryId: String,
         entryId: String,
         onComplete: (Boolean) -> Unit
     ) {
-        entriesRef.document(entryId)
+        getEntriesRef(diaryId).document(entryId)
             .delete()
             .addOnCompleteListener {
                 onComplete.invoke(it.isSuccessful)
@@ -109,23 +121,129 @@ class StorageRepository(){
     }
 
     fun updateEntry(
+        diaryId: String,
         entryId: String,
-        title: String,
         name: String,
         description: String,
         mood: Int,
-        date: String,
+        date: Timestamp,
         onResult: (Boolean) -> Unit
     ) {
         val updateData = hashMapOf<String, Any>(
-            "diaryTitle" to title,
             "entryName" to name,
             "entryDescription" to description,
             "entryMood" to mood,
             "entryDate" to date
         )
 
-        entriesRef.document(entryId)
+        getEntriesRef(diaryId).document(entryId)
+            .update(updateData)
+            .addOnCompleteListener {
+                onResult(it.isSuccessful)
+            }
+    }
+
+
+    // Diary Functions
+
+    fun getUserDiaries(
+        userId: String
+    ): Flow<Resources<List<Diaries>>> = callbackFlow {
+        var snapshotStateListener:ListenerRegistration? = null
+
+        try {
+            snapshotStateListener = getDiariesRef()
+                .orderBy("diaryId")
+                .whereEqualTo("userId", userId)
+                .addSnapshotListener{ snapshot, e ->
+                    val response = if (snapshot != null) {
+                        val diaries = snapshot.toObjects(Diaries::class.java)
+                        Resources.Success(data = diaries)
+                    } else {
+                        Resources.Failure(throwable = e)
+                    }
+                    trySend(response)
+                }
+        } catch (e: Exception) {
+            trySend(Resources.Failure(e.cause))
+            e.printStackTrace()
+        }
+
+        awaitClose {
+            snapshotStateListener?.remove()
+        }
+    }
+
+    fun getDiary(
+        diaryId: String,
+        onError: (Throwable?) -> Unit,
+        onSuccess: (Diaries?) -> Unit
+    ) {
+        getDiariesRef()
+            .document(diaryId)
+            .get()
+            .addOnSuccessListener {
+                onSuccess.invoke(it?.toObject(Diaries::class.java))
+            }
+            .addOnFailureListener {result ->
+                onError.invoke(result.cause)
+            }
+
+    }
+
+    fun addDiary(
+        userId: String,
+        title: String,
+        imageUrl: String,
+        description: String,
+        createdDate: Timestamp,
+        onComplete: (Boolean) -> Unit
+    ) {
+        val documentId = getDiariesRef().document().id
+        val diary = Diaries(
+            userId = userId,
+            diaryId = documentId,
+            diaryTitle = title,
+            imageUrl = imageUrl,
+            diaryDescription = description,
+            diaryCreatedDate = createdDate
+        )
+        getDiariesRef()
+            .document(documentId)
+            .set(diary)
+            .addOnCompleteListener { result ->
+                onComplete.invoke(result.isSuccessful)
+            }
+
+    }
+
+    fun deleteDiary(
+        diaryId: String,
+        onComplete: (Boolean) -> Unit
+    ) {
+        getDiariesRef().document(diaryId)
+            .delete()
+            .addOnCompleteListener {
+                onComplete.invoke(it.isSuccessful)
+            }
+    }
+
+    fun updateDiary(
+        diaryId: String,
+        title: String,
+        imageUrl: String,
+        description: String,
+        createdDate: Timestamp,
+        onResult: (Boolean) -> Unit
+    ) {
+        val updateData = hashMapOf<String, Any>(
+            "diaryTitle" to title,
+            "imageUrl" to imageUrl,
+            "diaryDescription" to description,
+            "diaryCreatedDate" to createdDate
+        )
+
+        getDiariesRef().document(diaryId)
             .update(updateData)
             .addOnCompleteListener {
                 onResult(it.isSuccessful)

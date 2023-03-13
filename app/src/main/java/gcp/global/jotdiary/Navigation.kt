@@ -5,46 +5,29 @@ import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import gcp.global.jotdiary.controller.EntryViewmodel
-import gcp.global.jotdiary.controller.HomeViewModel
-import gcp.global.jotdiary.controller.LoginViewModel
-import gcp.global.jotdiary.view.screens.EntryScreen
-import gcp.global.jotdiary.view.screens.Home
-import gcp.global.jotdiary.view.screens.LoginScreen
-import gcp.global.jotdiary.view.screens.SignUpScreen
-
-
-enum class LoginRoutes {
-    Signup,
-    SignIn
-}
-
-enum class HomeRoutes {
-    Home,
-    Entry
-}
-
-enum class NestedRoutes {
-    Main,
-    Login
-}
+import gcp.global.jotdiary.controller.*
+import gcp.global.jotdiary.view.screens.*
 
 @Composable
 fun Navigation(
     navController: NavHostController = rememberNavController(),
     loginViewModel: LoginViewModel,
     entryViewModel: EntryViewmodel,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    diaryViewmodel: DiaryViewmodel,
+    diariesViewmodel: DiariesViewmodel,
 ) {
     NavHost(
         navController = navController,
-        startDestination = NestedRoutes.Main.name
+        startDestination = "main"
     ) {
         authGraph(navController, loginViewModel)
         homeGraph(
             navController = navController,
             entryViewModel,
-            homeViewModel
+            homeViewModel,
+            diaryViewmodel,
+            diariesViewmodel
         )
     }
 }
@@ -54,39 +37,41 @@ fun NavGraphBuilder.authGraph(
     loginViewModel: LoginViewModel,
 ) {
     navigation(
-        startDestination = LoginRoutes.SignIn.name,
-        route = NestedRoutes.Login.name
+        startDestination = "signin",
+        route = "login"
     ) {
-        composable(route = LoginRoutes.SignIn.name) {
-            LoginScreen(onNavToHomePage = {
-                navController.navigate(NestedRoutes.Main.name) {
-                    launchSingleTop = true
-                    popUpTo(route = LoginRoutes.SignIn.name) {
-                        inclusive = true
+        composable(route = "signin") {
+            LoginScreen(
+                onNavToHomePage = {
+                    navController.navigate("main") {
+                        launchSingleTop = true
+                        popUpTo(route = "signin") {
+                            inclusive = true
+                        }
                     }
-                }
-            },
-                loginViewModel = loginViewModel
+                },
+                loginViewModel = loginViewModel,
             ) {
-                navController.navigate(LoginRoutes.Signup.name) {
+                navController.navigate("signup") {
                     launchSingleTop = true
-                    popUpTo(LoginRoutes.SignIn.name) {
+                    popUpTo("signin") {
                         inclusive = true
                     }
                 }
             }
         }
-        composable(route = LoginRoutes.Signup.name) {
-            SignUpScreen(onNavToHomePage = {
-                navController.navigate(NestedRoutes.Main.name) {
-                    popUpTo(LoginRoutes.Signup.name) {
-                        inclusive = true
+        composable(route = "signup") {
+            SignUpScreen(
+                onNavToHomePage = {
+                    navController.navigate("main") {
+                        popUpTo("signup") {
+                            inclusive = true
+                        }
                     }
-                }
-            },
+                },
                 loginViewModel = loginViewModel
             ) {
-                navController.navigate(LoginRoutes.SignIn.name)
+                navController.navigate("signin")
             }
         }
     }
@@ -95,69 +80,116 @@ fun NavGraphBuilder.authGraph(
 fun NavGraphBuilder.homeGraph(
     navController: NavHostController,
     entryViewModel: EntryViewmodel,
-    homeViewModel: HomeViewModel
-){
+    homeViewModel: HomeViewModel,
+    diaryViewmodel: DiaryViewmodel,
+    diariesViewmodel: DiariesViewmodel
+) {
     navigation(
-        startDestination = HomeRoutes.Home.name,
-        route = NestedRoutes.Main.name,
-    ){
-        composable(HomeRoutes.Home.name){
+        startDestination = "home",
+        route = "main",
+    ) {
+        composable("home") {
             Home(
                 homeViewModel = homeViewModel,
-                onEntryClick = { entryId ->
+                onDiaryClick = { diaryId ->
                     navController.navigate(
-                        HomeRoutes.Entry.name + "?id=$entryId"
-                    ){
+                        "diary?id=$diaryId"
+                    ) {
                         launchSingleTop = true
                     }
                 },
-                navToEntryPage = {
-                    navController.navigate(HomeRoutes.Entry.name)
-                }
+                navToDiaryPage = {
+                    navController.navigate("diary") // this triggers route = "diary?id={id}" without any id. The id is created in firebase when the diary is saved, and it is assigned in the StorageRepository (diaryId = diariesRef.document().id)
+                },
+                navToDiaryEditPage = { diaryId ->
+                    navController.navigate(
+                        "diaryEdit?id=$diaryId"
+                    ) {
+                        launchSingleTop = true
+                    }
+                },
             ) {
-                navController.navigate(NestedRoutes.Login.name){
+                navController.navigate("signin") {
                     launchSingleTop = true
-                    popUpTo(0){
+                    popUpTo(0) {
                         inclusive = true
                     }
                 }
             }
         }
         composable(
-            route = HomeRoutes.Entry.name + "?id={id}",
-            arguments = listOf(navArgument("id"){
+            route = "diaryEdit?id={diaryId}",
+            arguments = listOf(navArgument("diaryId") {
                 type = NavType.StringType
                 defaultValue = ""
             })
-        ){ entry ->
+        ) { diary ->
+            DiaryScreen(
+                diaryViewmodel = diaryViewmodel,
+                diaryId = diary.arguments?.getString("diaryId") as String,
+                navController = navController
+            )
+        }
+        composable(
+            route = "diary?id={diaryId}",
+            arguments = listOf(navArgument("diaryId") {
+                type = NavType.StringType
+                defaultValue = ""
+            })
+        ) { diary ->
+            if ((diary.arguments?.getString("diaryId"))?.isNotEmpty() == true) {
+                DiariesScreen(
+                    diariesViewmodel = diariesViewmodel,
+                    onEntryClick = { entryId, diaryId ->
+                        navController.navigate(
+                            "entry?id=$diaryId/$entryId"
+                        ) {
+                            launchSingleTop = true
+                        }
+                    },
+                    navToEntryPage = {
+                        navController.navigate(
+                            route = "entry?id=${diary.arguments?.getString("diaryId")}/"
+                        )
+                    },
+                    diaryId = diary.arguments?.getString("diaryId") as String,
+                    navController = navController
+                )
+            } else {
+                DiaryScreen(
+                    navController = navController,
+                    diaryViewmodel = diaryViewmodel,
+                    diaryId = diary.arguments?.getString("diaryId") as String
+                )
+            }
+        }
+        composable(
+            route = "entry?id={diaryId}/{entryId}",
+            arguments = listOf(
+                navArgument("entryId") {
+                type = NavType.StringType
+                defaultValue = ""
+                },
+
+                navArgument("diaryId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            )
+        ) { entry ->
             EntryScreen(
                 entryViewModel = entryViewModel,
-                entryId = entry.arguments?.getString("id") as String,
-            ) {
-                navController.navigateUp()
-            }
+                entryId = entry.arguments?.getString("entryId") as String,
+                diaryId = entry.arguments?.getString("diaryId") as String,
+                navController = navController
+            )
         }
     }
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// all routes above are defined here
+// login -> login ->
+// login -> signup ->
+// main -> home ->
+// main -> entry ->

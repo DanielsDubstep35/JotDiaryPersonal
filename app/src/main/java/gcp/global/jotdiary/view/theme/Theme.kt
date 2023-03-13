@@ -17,13 +17,13 @@ private val DarkColorPalette = darkColors(
 private val LightColorPalette = lightColors(
     primary = Beige,
     primaryVariant = BeigeDark,
-    secondary = JotDiary2,
+    secondary = BeigeDarkest,
     background = BeigeDarker,
-    onPrimary = JotDiaryDarkest,
+    onPrimary = Beige,
     surface = BeigeLight,
     onSurface = BeigeDarkest,
     onBackground = BeigeLight,
-    onError = JotDiary2Darkest
+    onError = Beige
 
     /* Other default colors to override
     background = Color.White,
