@@ -27,6 +27,7 @@ fun LoginScreen(
     onNavToHomePage:() -> Unit,
     onNavToSignUpPage:() -> Unit,
 ) {
+
     val loginUiState = loginViewModel?.loginUiState
     val isError = loginUiState?.loginError != null
     val context = LocalContext.current
@@ -57,6 +58,7 @@ fun LoginScreen(
                 .fillMaxWidth()
                 .padding(top = 139.dp)
         ) {
+
             Image(
                 modifier = Modifier
                     .size(100.dp),
@@ -75,6 +77,7 @@ fun LoginScreen(
             Text(
                 text = loginUiState?.loginError ?: "unknown error",
                 color = Color.Red,
+                textAlign = TextAlign.Center,
             )
         }
 

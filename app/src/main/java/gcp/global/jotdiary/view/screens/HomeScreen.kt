@@ -2,14 +2,13 @@ package gcp.global.jotdiary.view.screens
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -238,7 +237,8 @@ fun DiaryItem(
                 onClick = { onClick.invoke() }
             )
             .padding(8.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .height(400.dp),
         backgroundColor = MaterialTheme.colors.onBackground,
     ) {
         Column {
@@ -260,17 +260,32 @@ fun DiaryItem(
                         .padding(8.dp)
                 )
 
-                IconButton(
-                    onClick = { onDiaryEditClick.invoke() },
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .padding(8.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit Diary",
-                        tint = MaterialTheme.colors.onSurface,
+                    Text(
+                        text = "${diaries.diaryCreatedDate.toDate().date}/${diaries.diaryCreatedDate.toDate().month}/${diaries.diaryCreatedDate.toDate().year.plus(1900)}",
+                        style = MaterialTheme.typography.body1,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .padding(8.dp)
                     )
+
+                    IconButton(
+                        onClick = { onDiaryEditClick.invoke() },
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .padding(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Diary",
+                            tint = MaterialTheme.colors.onSurface,
+                        )
+                    }
+
                 }
             }
             
@@ -280,8 +295,30 @@ fun DiaryItem(
                 modifier = Modifier
                     .fillMaxWidth()
             )
-            
-            //Image(painter = , contentDescription = )
+
+            coilImage(
+                Url = diaries.imageUrl,
+                Modifier = Modifier
+                    .fillMaxWidth()
+                    .height(270.dp),
+                Shape = MaterialTheme.shapes.small.copy(all = CornerSize(0.dp))
+            )
+
+            Divider(
+                color = MaterialTheme.colors.onSurface,
+                thickness = 2.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+
+            Text(
+                text = diaries.diaryDescription,
+                style = MaterialTheme.typography.body1,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .padding(8.dp)
+            )
             
         }
     }

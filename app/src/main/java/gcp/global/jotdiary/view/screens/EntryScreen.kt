@@ -21,15 +21,15 @@ import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import gcp.global.jotdiary.controller.EntryUiState
 import gcp.global.jotdiary.controller.EntryViewmodel
+import gcp.global.jotdiary.view.components.EntryNestedTopBar
 import gcp.global.jotdiary.view.components.MoodBottomBar
-import gcp.global.jotdiary.view.components.NestedTopBar
 import kotlinx.coroutines.launch
 import java.util.*
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun EntryScreen(
-    entryViewModel: EntryViewmodel?,
+    entryViewModel: EntryViewmodel,
     entryId: String,
     diaryId: String,
     navController: NavHostController
@@ -57,7 +57,7 @@ fun EntryScreen(
     val previousScreen = "Entries"
     val currentScreen = if (isEntryIdNotBlank) entryUiState.name else "Add a new Entry"
 
-    val saveOrUpdate = if (isEntryIdNotBlank) "Update This Diary" else "Save Your New Diary"
+    val saveOrUpdate = if (isEntryIdNotBlank) "Update This Entry" else "Save Your New Entry"
 
     // Date Variables
     val dialogState = rememberMaterialDialogState()
@@ -66,15 +66,11 @@ fun EntryScreen(
     var month = calendar.get(Calendar.MONTH)
     var year = calendar.get(Calendar.YEAR)
 
-    println(day)
-    println(month)
-    println(year)
-    println("$day/$month/$year")
-
     var currentDateAndTime: Timestamp
 
+
     Scaffold(scaffoldState = scaffoldState,
-        topBar = { NestedTopBar(navController = navController, previousScreen = previousScreen, currentScreen = currentScreen) },
+        topBar = { EntryNestedTopBar(previousScreen = previousScreen, currentScreen = currentScreen, navController = navController, entryViewmodel = entryViewModel) },
         bottomBar = { MoodBottomBar(entryViewModel = entryViewModel, mood = entryUiState.mood) }
     ) { padding ->
 

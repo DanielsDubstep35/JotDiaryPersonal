@@ -1,5 +1,6 @@
 package gcp.global.jotdiary.controller
 
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -25,7 +26,6 @@ class DiaryViewmodel(
         diaryUiState = diaryUiState.copy(title = title)
     }
 
-    /*
     fun onDescriptionChange(description:String){
         diaryUiState = diaryUiState.copy(description = description)
     }
@@ -34,17 +34,31 @@ class DiaryViewmodel(
         diaryUiState = diaryUiState.copy(createdDate = date)
     }
 
-    fun onImageChange(imageUrl:String){
-        diaryUiState = diaryUiState.copy(imageUrl = imageUrl)
+    fun onImageChange(imageUri: Uri?){
+        diaryUiState = diaryUiState.copy(imageUri = imageUri)
     }
+
+    /*
+    repository.storage.reference.child("Users/${Firebase.auth.currentUser?.uid}/Images/${diaryId}")
+                .downloadUrl
+                .addOnSuccessListener {
+                    Log.d("GOT IMAGE", "TASK HAS COMPLETED")
+                    diaryUiState = diaryUiState.copy(imageUri = it)
+                }
+                .addOnFailureListener {
+                    diaryUiState = diaryUiState.copy(imageUri = null)
+                    Log.d("MISSED IMAGE", "TASK HAS FAILED")
+                }
     */
+
 
     fun addDiary(){
         if(hasUser){
+
             repository.addDiary(
                 userId = user!!.uid,
                 title = diaryUiState.title,
-                imageUrl = diaryUiState.imageUrl,
+                imageUri = diaryUiState.imageUri,
                 description = diaryUiState.description,
                 createdDate = diaryUiState.createdDate,
             ) {
@@ -54,11 +68,12 @@ class DiaryViewmodel(
     }
 
     fun setDiaryFields(diary: Diaries){
+
         diaryUiState = diaryUiState.copy(
             title = diary.diaryTitle,
-            imageUrl = diary.imageUrl,
             description = diary.diaryDescription,
             createdDate = diary.diaryCreatedDate,
+            imageUrl = diary.imageUrl,
         )
     }
 
@@ -70,6 +85,7 @@ class DiaryViewmodel(
             diaryUiState = diaryUiState.copy(selectedDiary = it)
             diaryUiState.selectedDiary?.let { it1 -> setDiaryFields(it1) }
         }
+
     }
 
     fun updateDiary(
@@ -78,11 +94,12 @@ class DiaryViewmodel(
         repository.updateDiary(
             title = diaryUiState.title,
             diaryId = diaryId,
-            imageUrl = diaryUiState.imageUrl,
+            imageUri = diaryUiState.imageUri,
             description = diaryUiState.description,
             createdDate = diaryUiState.createdDate,
         ) {
             diaryUiState = diaryUiState.copy(updateDiaryStatus = it)
+
         }
     }
 
@@ -102,6 +119,7 @@ class DiaryViewmodel(
 data class DiaryUiState(
     val diaryId: String = "",
     val title: String = "",
+    val imageUri: Uri? = null,
     val imageUrl: String = "",
     val description: String = "",
     val createdDate: Timestamp = Timestamp.now(),
