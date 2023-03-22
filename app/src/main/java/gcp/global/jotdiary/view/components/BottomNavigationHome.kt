@@ -5,13 +5,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.BottomAppBar
+import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun BottomNavigationHome() {
+fun BottomNavigationHome(
+    navController: () -> Unit
+) {
     BottomAppBar(
         backgroundColor = MaterialTheme.colors.primary,
         cutoutShape = MaterialTheme.shapes.large.copy(
@@ -24,10 +30,10 @@ fun BottomNavigationHome() {
         ) {
 
             /*
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = { navController.invoke() }) {
                 Icon(Icons.Filled.DateRange, contentDescription = null, tint = MaterialTheme.colors.secondary)
             }
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = { navController.invoke() }) {
                 Icon(Icons.Default.AccountCircle, contentDescription = null, tint = MaterialTheme.colors.secondary)
             }
             */

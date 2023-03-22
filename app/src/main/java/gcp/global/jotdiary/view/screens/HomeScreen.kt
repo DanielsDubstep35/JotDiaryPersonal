@@ -124,7 +124,7 @@ fun Home(
                 backgroundColor = MaterialTheme.colors.primary,
             )
         },
-        bottomBar = { BottomNavigationHome() },
+        bottomBar = { BottomNavigationHome(navController = navToDiaryPage) },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
             when (homeUiState.diariesList) {

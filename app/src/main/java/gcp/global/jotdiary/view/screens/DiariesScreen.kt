@@ -179,6 +179,7 @@ fun EntryItem(
                         all = CornerSize(0.dp)
                     )
                 ),
+
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceEvenly,

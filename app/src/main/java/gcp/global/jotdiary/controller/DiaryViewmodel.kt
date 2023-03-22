@@ -10,9 +10,9 @@ import com.google.firebase.auth.FirebaseUser
 import gcp.global.jotdiary.model.models.Diaries
 import gcp.global.jotdiary.model.repository.StorageRepository
 
-class DiaryViewmodel(
+class DiaryViewmodel (
     private val repository: StorageRepository = StorageRepository(),
-):ViewModel() {
+): ViewModel() {
     var diaryUiState by mutableStateOf(DiaryUiState())
         private set
 
@@ -38,6 +38,10 @@ class DiaryViewmodel(
         diaryUiState = diaryUiState.copy(imageUri = imageUri)
     }
 
+    fun onImageChangeUrl(imageUrl: String){
+        diaryUiState = diaryUiState.copy(imageUrl = imageUrl)
+    }
+
     /*
     repository.storage.reference.child("Users/${Firebase.auth.currentUser?.uid}/Images/${diaryId}")
                 .downloadUrl
@@ -59,6 +63,20 @@ class DiaryViewmodel(
                 userId = user!!.uid,
                 title = diaryUiState.title,
                 imageUri = diaryUiState.imageUri,
+                description = diaryUiState.description,
+                createdDate = diaryUiState.createdDate,
+            ) {
+                diaryUiState = diaryUiState.copy(diaryAddedStatus = it)
+            }
+        }
+    }
+
+    fun addDiaryUrl() {
+        if(hasUser) {
+            repository.addDiaryUrl(
+                userId = user!!.uid,
+                title = diaryUiState.title,
+                imageUrl = diaryUiState.imageUrl,
                 description = diaryUiState.description,
                 createdDate = diaryUiState.createdDate,
             ) {

@@ -30,16 +30,20 @@ class StorageRepository() {
 
     fun getDiariesRef(): CollectionReference {
         val diariesRef = Firebase.firestore.collection(DIARIES_COLLECTION_REF)
+
+        println("DiariesRef current user: ${getUserId()}")
+        println("Path is ${diariesRef.path}")
+
         return diariesRef
     }
 
     fun getEntriesRef(diaryId: String): CollectionReference {
         val entriesRef = Firebase.firestore.collection(DIARIES_COLLECTION_REF).document(diaryId).collection(ENTRIES_COLLECTION_REF)
+
         return entriesRef
     }
 
     // download media in firebase storage
-
 
     // Entry Functions
     fun getUserEntries(
@@ -192,7 +196,7 @@ class StorageRepository() {
             .addOnSuccessListener {
                 onSuccess.invoke(it?.toObject(Diaries::class.java))
             }
-            .addOnFailureListener {result ->
+            .addOnFailureListener { result ->
                 onError.invoke(result.cause)
             }
 
@@ -208,15 +212,41 @@ class StorageRepository() {
     ) {
         val documentId = getDiariesRef().document().id
 
-        // upload diary image to firebase storage, which is separate from firebase firestore
-        var addFile = imageUri
-        val addDiaryImageRef = storage.reference.child("Users/${Firebase.auth.currentUser?.uid}/Images/${documentId}")
-        var uploadTask = addDiaryImageRef.putFile(addFile!!)
+        try {
+            // upload diary image to firebase storage, which is separate from firebase firestore
+            var addFile = imageUri
 
-        uploadTask.isComplete // check if upload is complete
+            // remove Users/${Firebase.auth.currentUser?.uid} in the next update, as it is not needed
+            // Firebase rules allows a user, who is currently logged in, to access their own data, via Users/{userId}
+            // The rule for firestore would look like:
+
+            /*
+
+            match /Users/{userId}/{documents=**} {
+                allow read, write: if request.auth != null && request.auth.uid == userId
+            }
+
+             */
+
+            // The rule for storage would look like:
+
+            /*
+
+            match /Users/{userId}/{allPaths=**} {
+                allow read, write: if request.auth != null && request.auth.uid == userId
+            }
+
+             */
+            val addDiaryImageRef = storage.reference.child("Users/${getUserId()}/Images/${documentId}")
+
+            // val addDiaryImageRef = storage.reference.child("Images/${documentId}")
+
+            var uploadTask = addDiaryImageRef.putFile(addFile!!)
+
+            uploadTask.isComplete // check if upload is complete
 
             addDiaryImageRef.downloadUrl.addOnSuccessListener { Url ->
-            // get the download url of the image
+                // get the download url of the image
                 val imageUrl = Url.toString()
 
                 val diary = Diaries(
@@ -235,7 +265,42 @@ class StorageRepository() {
                         onComplete.invoke(result.isSuccessful)
                     }
             }
+        } catch (e: Exception) {
+            println(e)
+        }
+    }
 
+    fun addDiaryUrl(
+        userId: String,
+        title: String,
+        imageUrl: String,
+        description: String,
+        createdDate: Timestamp,
+        onComplete: (Boolean) -> Unit
+    ) {
+        val documentId = getDiariesRef().document().id
+
+        try {
+
+            val diary = Diaries(
+                userId = userId,
+                diaryId = documentId,
+                diaryTitle = title,
+                imageUrl = imageUrl,
+                diaryDescription = description,
+                diaryCreatedDate = createdDate
+            )
+
+            getDiariesRef()
+                .document(documentId)
+                .set(diary)
+                .addOnCompleteListener { result ->
+                    onComplete.invoke(result.isSuccessful)
+                }
+
+        } catch (e: Exception) {
+            println(e)
+        }
     }
 
     fun deleteDiary(
