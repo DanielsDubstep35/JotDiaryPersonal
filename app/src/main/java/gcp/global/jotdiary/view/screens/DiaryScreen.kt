@@ -28,6 +28,7 @@ import androidx.navigation.NavHostController
 import coil.ImageLoader
 import coil.compose.*
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseUser
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
@@ -110,6 +111,8 @@ fun DiaryScreen(
 
     var currentDateAndTime: Timestamp
 
+    // error message: current date and time should not be in the future
+
     val saveOrUpdate = if (isDiaryIdNotBlank) "Update This Diary" else "Save Your New Diary"
 
     var selectedImage = diaryUiState.imageUri
@@ -125,6 +128,19 @@ fun DiaryScreen(
     Scaffold(scaffoldState = scaffoldState,
         topBar = { DiaryNestedTopBar(previousScreen = previousScreen, currentScreen = currentScreen, navController = navController, diaryViewmodel = diaryViewmodel) }
     ) { padding ->
+
+
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(onClick = { /*TODO*/ }) {
+
+                }
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -337,7 +353,10 @@ fun DiaryScreen(
                 if (pickedPhoto != null) {
                     coilImage(Uri = pickedPhoto)
                 } else {
-                    coilImage(Url = diaryUiState.imageUrl, Modifier = Modifier.fillMaxWidth().height(250.dp).padding(24.dp), Shape = MaterialTheme.shapes.medium)
+                    coilImage(Url = diaryUiState.imageUrl, Modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                        .padding(24.dp), Shape = MaterialTheme.shapes.medium)
                 }
 
                 Row(
@@ -355,6 +374,8 @@ fun DiaryScreen(
                             singlePhotoLauncher.launch(
                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                             )
+
+
 
                             //Log.d("Diary", "Imageeee Uri: ${ActivityResultContracts.PickVisualMedia.ImageOnly}")
 
@@ -377,10 +398,16 @@ fun DiaryScreen(
                     // Save or Update
                     Button(
                         onClick = {
-                            if (isDiaryIdNotBlank) {
-                                diaryViewmodel?.updateDiary(diaryId = diaryId)
+                            if (pickedPhoto == null && (diaryUiState.imageUri == null || diaryUiState.imageUrl == "")) {
+                                scope.launch {
+                                    scaffoldState.snackbarHostState
+                                        .showSnackbar("No Image Selected")
+                                    diaryViewmodel.onImageChangeUrl("https://cdn11.bigcommerce.com/s-3uewkq06zr/images/stencil/1280x1280/products/258/543/fluorescent_pink__88610.1492541080.png?c=2")
+                                    diaryViewmodel.addDiaryUrl()
+                                    diaryViewmodel.resetDiaryAddedStatus()
+                                }
                             } else {
-                                diaryViewmodel?.addDiary()
+                                diaryViewmodel?.updateDiary(diaryId = diaryId)
                             }
                         },
                         modifier = Modifier

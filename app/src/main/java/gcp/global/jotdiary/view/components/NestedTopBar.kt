@@ -104,10 +104,11 @@ fun DiaryNestedTopBar(
                         textAlign = TextAlign.End
                     ),
                     overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
                 )
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "Back Button",
+                    contentDescription = "pointing arrow",
                     tint = MaterialTheme.colors.primary,
                     modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp)
                 )
@@ -119,6 +120,7 @@ fun DiaryNestedTopBar(
                         color = MaterialTheme.colors.primary,
                     ),
                     overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
                 )
             }
         },
