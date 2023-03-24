@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 class LoginViewModel(
     private val repository: AuthRepository = AuthRepository(),
 ) : ViewModel() {
-    val currentUser = repository.currentUser
 
     val hasUser: Boolean
         get() = repository.hasUser()
@@ -48,15 +47,17 @@ class LoginViewModel(
     private fun validateSignupForm() =
         loginUiState.userNameSignUp.isNotBlank() &&
                 loginUiState.passwordSignUp.isNotBlank() &&
-                loginUiState.confirmPasswordSignUp.isNotBlank()
-
+                    loginUiState.confirmPasswordSignUp.isNotBlank()
 
     fun createUser(context: Context) = viewModelScope.launch {
         try {
+
             if (!validateSignupForm()) {
                 throw IllegalArgumentException("email and password can not be empty")
             }
+
             loginUiState = loginUiState.copy(isLoading = true)
+
             if (loginUiState.passwordSignUp !=
                 loginUiState.confirmPasswordSignUp
             ) {
@@ -64,11 +65,14 @@ class LoginViewModel(
                     "Password do not match"
                 )
             }
+
             loginUiState = loginUiState.copy(signUpError = null)
+
             repository.createUser(
                 loginUiState.userNameSignUp,
                 loginUiState.passwordSignUp
             ) { isSuccessful ->
+
                 if (isSuccessful) {
                     Toast.makeText(
                         context,
@@ -87,7 +91,6 @@ class LoginViewModel(
 
             }
 
-
         } catch (e: Exception) {
             loginUiState = loginUiState.copy(signUpError = e.localizedMessage)
             e.printStackTrace()
@@ -95,20 +98,23 @@ class LoginViewModel(
             loginUiState = loginUiState.copy(isLoading = false)
         }
 
-
     }
 
     fun loginUser(context: Context) = viewModelScope.launch {
         try {
+
             if (!validateLoginForm()) {
                 throw IllegalArgumentException("email and password can not be empty")
             }
+
             loginUiState = loginUiState.copy(isLoading = true)
+
             loginUiState = loginUiState.copy(loginError = null)
             repository.login(
                 loginUiState.userName,
                 loginUiState.password
             ) { isSuccessful ->
+
                 if (isSuccessful) {
                     Toast.makeText(
                         context,
@@ -124,6 +130,7 @@ class LoginViewModel(
                     ).show()
                     loginUiState = loginUiState.copy(isSuccessLogin = false)
                 }
+
             }
         } catch (e: Exception) {
             loginUiState = loginUiState.copy(loginError = e.localizedMessage)

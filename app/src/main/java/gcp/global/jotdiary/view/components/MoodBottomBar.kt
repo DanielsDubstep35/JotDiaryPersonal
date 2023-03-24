@@ -22,6 +22,7 @@ fun MoodBottomBar(
 
     val unselectedEmoji = Modifier
         .alpha(0.3f).scale(0.5f)
+
     val selectedEmoji = Modifier
         .alpha(1f).scale(1f)
 
@@ -34,6 +35,7 @@ fun MoodBottomBar(
            modifier = Modifier.fillMaxSize(),
            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly
        ) {
+
            IconButton(onClick = {
                entryViewModel?.onMoodChange(1)
            }) {

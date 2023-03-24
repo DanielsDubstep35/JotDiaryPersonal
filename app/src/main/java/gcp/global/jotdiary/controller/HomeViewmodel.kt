@@ -14,11 +14,12 @@ import kotlinx.coroutines.launch
 class HomeViewModel(
     private val repository: StorageRepository = StorageRepository(),
 ) : ViewModel() {
+
     var homeUiState by mutableStateOf(HomeUiState())
 
-    val user = repository.user()
     val hasUser: Boolean
         get() = repository.hasUser()
+
     private val userId: String
         get() = repository.getUserId()
 
@@ -28,7 +29,7 @@ class HomeViewModel(
                 getUserDiaries(userId)
                 Log.d("HomeViewModel: Line 29, folder: controller/HomeViewModel", "userId = $userId")
             }
-        }else{
+        } else {
             homeUiState = homeUiState.copy(diariesList = Resources.Failure(
                 throwable = Throwable(message = "The User is not Logged In")
             ))

@@ -36,11 +36,6 @@ fun EntryScreen(
 ) {
     val entryUiState = entryViewModel?.entryUiState ?: EntryUiState()
 
-    /*
-    val isFormsNotBlank = entryUiState.description.isNotBlank() &&
-            entryUiState.name.isNotBlank()
-    */
-
     val isEntryIdNotBlank = entryId.isNotBlank()
 
     LaunchedEffect(key1 = Unit) {
@@ -50,22 +45,22 @@ fun EntryScreen(
             entryViewModel?.resetState()
         }
     }
+
     val scope = rememberCoroutineScope()
 
     val scaffoldState = rememberScaffoldState()
 
     val previousScreen = "Entries"
+
     val currentScreen = if (isEntryIdNotBlank) entryUiState.name else "Add a new Entry"
 
     val saveOrUpdate = if (isEntryIdNotBlank) "Update This Entry" else "Save Your New Entry"
 
-    // Date Variables
     val dialogState = rememberMaterialDialogState()
     val calendar = GregorianCalendar.getInstance()
     var day = calendar.get(Calendar.DAY_OF_MONTH)
     var month = calendar.get(Calendar.MONTH)
     var year = calendar.get(Calendar.YEAR)
-
     var currentDateAndTime: Timestamp
 
 
@@ -142,7 +137,6 @@ fun EntryScreen(
                 }
             }
 
-            // Paper
             Column(
                 modifier = Modifier
                     .padding(16.dp)
@@ -172,7 +166,6 @@ fun EntryScreen(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Display Date in small text
                         Text(
                             text = "${entryUiState.date.toDate().date}/${entryUiState.date.toDate().month}/${entryUiState.date.toDate().year.plus(1900)}",
                             modifier = Modifier.padding(8.dp),
@@ -183,7 +176,6 @@ fun EntryScreen(
                             )
                         )
 
-                        // Date Picker Button
                         IconButton(onClick = { dialogState.show() }) {
                             Icon(
                                 imageVector = Icons.Default.DateRange,
@@ -192,7 +184,6 @@ fun EntryScreen(
                             )
                         }
                     }
-
                 }
 
                 Divider(color = MaterialTheme.colors.onSurface)
@@ -206,7 +197,6 @@ fun EntryScreen(
                         .padding(16.dp)
                         .fillMaxSize()
                 )
-
             }
 
             Button(
@@ -231,7 +221,6 @@ fun EntryScreen(
                     )
                 )
             }
-
         }
     }
 }

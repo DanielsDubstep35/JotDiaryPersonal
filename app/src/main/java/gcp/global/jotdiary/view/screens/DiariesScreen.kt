@@ -1,7 +1,6 @@
 package gcp.global.jotdiary.view.screens
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -50,7 +49,6 @@ fun DiariesScreen(
         mutableStateOf(null)
     }
 
-    // val scope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
 
     val previousScreen = "Home"
@@ -80,6 +78,7 @@ fun DiariesScreen(
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
             when (diariesUiState.entriesList) {
+
                 is Resources.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier
@@ -87,6 +86,7 @@ fun DiariesScreen(
                             .wrapContentSize(align = Alignment.Center)
                     )
                 }
+
                 is Resources.Success -> {
                     LazyHorizontalGrid(
                         rows = GridCells.Fixed(1),
@@ -106,6 +106,7 @@ fun DiariesScreen(
                             }
                         }
                     }
+
                     AnimatedVisibility(visible = openDialog) {
                         AlertDialog(
                             onDismissRequest = {
@@ -134,15 +135,16 @@ fun DiariesScreen(
                             }
                         )
                     }
+
                 }
-                else -> {
+
+                is Resources.Failure -> {
                     Text(
                         text = diariesUiState
                             .entriesList.throwable?.localizedMessage ?: "Unknown Error",
                         color = Color.Black
                     )
 
-                    Log.d("HomeScreen", "Error: ${diariesUiState.entriesList.throwable?.localizedMessage}")
                 }
             }
         }
@@ -168,6 +170,7 @@ fun EntryItem(
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+
         Column(
             modifier = Modifier
                 .padding(8.dp)
@@ -197,8 +200,6 @@ fun EntryItem(
                         fontSize = 20.sp,
                     )
                 )
-
-                // ${entryUiState.date.toDate().date}/${entryUiState.date.toDate().month}/${entryUiState.date.toDate().year.plus(1900)}
 
                 Text(
                     text = "${entries.entryDate.toDate().date}/${entries.entryDate.toDate().month}/${entries.entryDate.toDate().year.plus(1900)}",
@@ -231,7 +232,6 @@ fun EntryItem(
                     fontSize = 16.sp,
                 )
             )
-
         }
 
         Card(
