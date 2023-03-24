@@ -42,20 +42,6 @@ class DiaryViewmodel (
         diaryUiState = diaryUiState.copy(imageUrl = imageUrl)
     }
 
-    /*
-    repository.storage.reference.child("Users/${Firebase.auth.currentUser?.uid}/Images/${diaryId}")
-                .downloadUrl
-                .addOnSuccessListener {
-                    Log.d("GOT IMAGE", "TASK HAS COMPLETED")
-                    diaryUiState = diaryUiState.copy(imageUri = it)
-                }
-                .addOnFailureListener {
-                    diaryUiState = diaryUiState.copy(imageUri = null)
-                    Log.d("MISSED IMAGE", "TASK HAS FAILED")
-                }
-    */
-
-
     fun addDiary(){
         if(hasUser){
 

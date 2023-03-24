@@ -1,6 +1,5 @@
 package gcp.global.jotdiary.controller
 
-
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -14,18 +13,8 @@ import kotlinx.coroutines.launch
 class DiariesViewmodel(
     private val repository: StorageRepository = StorageRepository(),
 ) : ViewModel() {
+
     var diariesUiState by mutableStateOf(DiariesUiState())
-
-    // Dont need to find the user, because the user is already logged in
-    // also, if the user clicked on the diary, then it exists, so no need for hasDiary
-
-    /*
-    val user = repository.user()
-    val hasUser: Boolean
-        get() = repository.hasUser()
-    private val userId: String
-        get() = repository.getUserId()
-    */
 
     fun loadEntries(diaryId: String){
         getUserEntries(diaryId)
@@ -40,8 +29,6 @@ class DiariesViewmodel(
     fun deleteEntry(entryId:String, diaryId: String) = repository.deleteEntry(entryId = entryId, diaryId = diaryId){
         diariesUiState = diariesUiState.copy(entryDeletedStatus = it)
     }
-
-    //fun signOut() = repository.signOut()
 
 }
 

@@ -99,7 +99,7 @@ fun NavGraphBuilder.homeGraph(
                     }
                 },
                 navToDiaryPage = {
-                    navController.navigate("diary") // this triggers route = "diary?id={id}" without any id. The id is created in firebase when the diary is saved, and it is assigned in the StorageRepository (diaryId = diariesRef.document().id)
+                    navController.navigate("diary")
                 },
                 navToDiaryEditPage = { diaryId ->
                     navController.navigate(
@@ -186,10 +186,3 @@ fun NavGraphBuilder.homeGraph(
         }
     }
 }
-
-
-// all routes above are defined here
-// login -> login ->
-// login -> signup ->
-// main -> home ->
-// main -> entry ->

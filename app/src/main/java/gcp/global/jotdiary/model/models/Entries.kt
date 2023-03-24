@@ -2,8 +2,6 @@ package gcp.global.jotdiary.model.models
 
 import com.google.firebase.Timestamp
 
-/**
- */
 data class Entries(
     val entryId: String = "",
     val entryName: String = "Diary Entry",
