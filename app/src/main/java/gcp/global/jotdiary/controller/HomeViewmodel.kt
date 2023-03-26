@@ -26,7 +26,6 @@ class HomeViewModel(
         if (hasUser){
             if (userId.isNotBlank()){
                 getUserDiaries(userId)
-                Log.d("HomeViewModel: Line 29, folder: controller/HomeViewModel", "userId = $userId")
             }
         }else{
             homeUiState = homeUiState.copy(diariesList = Resources.Failure(

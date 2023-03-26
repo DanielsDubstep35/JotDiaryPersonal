@@ -1,7 +1,6 @@
 package gcp.global.jotdiary.model.repository
 
 import android.net.Uri
-import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.CollectionReference
@@ -17,6 +16,7 @@ import kotlinx.coroutines.flow.callbackFlow
 
 const val DIARIES_COLLECTION_REF = "Diaries"
 const val ENTRIES_COLLECTION_REF = "Entries"
+const val USERS_COLLECTION_REF = "Users"
 
 class StorageRepository() {
 
@@ -29,19 +29,19 @@ class StorageRepository() {
     fun getUserId(): String = Firebase.auth.currentUser?.uid.orEmpty()
 
     fun getDiariesRef(): CollectionReference {
-        val diariesRef = Firebase.firestore.collection(DIARIES_COLLECTION_REF)
+
+        val diariesRef = Firebase.firestore.collection(USERS_COLLECTION_REF).document(getUserId()).collection(DIARIES_COLLECTION_REF)
+
         return diariesRef
     }
 
     fun getEntriesRef(diaryId: String): CollectionReference {
-        val entriesRef = Firebase.firestore.collection(DIARIES_COLLECTION_REF).document(diaryId).collection(ENTRIES_COLLECTION_REF)
+
+        val entriesRef = Firebase.firestore.collection(USERS_COLLECTION_REF).document(getUserId()).collection(DIARIES_COLLECTION_REF).document(diaryId).collection(ENTRIES_COLLECTION_REF)
+
         return entriesRef
     }
 
-    // download media in firebase storage
-
-
-    // Entry Functions
     fun getUserEntries(
         diaryId: String
     ): Flow<Resources<List<Entries>>> = callbackFlow {
@@ -53,7 +53,6 @@ class StorageRepository() {
                 .addSnapshotListener{ snapshot, e ->
                     val response = if (snapshot != null) {
                         val entries = snapshot.toObjects(Entries::class.java)
-                        // println(snapshot.toObjects(Entries::class.java))
                         Resources.Success(data = entries)
                     } else {
                         Resources.Failure(throwable = e)
@@ -98,7 +97,6 @@ class StorageRepository() {
     ) {
         val documentId = getEntriesRef(diaryId).document().id
 
-        Log.d("StorageRepository", "Your diaryId is: $diaryId")
         val entry = Entries(
             entryId = documentId,
             entryName = name,
@@ -112,7 +110,6 @@ class StorageRepository() {
             .addOnCompleteListener { result ->
                 onComplete.invoke(result.isSuccessful)
             }
-
     }
 
     fun deleteEntry(
@@ -159,6 +156,7 @@ class StorageRepository() {
         var snapshotStateListener:ListenerRegistration? = null
 
         try {
+
             snapshotStateListener = getDiariesRef()
                 .orderBy("diaryId")
                 .whereEqualTo("userId", userId)
@@ -171,6 +169,7 @@ class StorageRepository() {
                     }
                     trySend(response)
                 }
+
         } catch (e: Exception) {
             trySend(Resources.Failure(e.cause))
             e.printStackTrace()
@@ -192,7 +191,7 @@ class StorageRepository() {
             .addOnSuccessListener {
                 onSuccess.invoke(it?.toObject(Diaries::class.java))
             }
-            .addOnFailureListener {result ->
+            .addOnFailureListener { result ->
                 onError.invoke(result.cause)
             }
 
@@ -207,23 +206,17 @@ class StorageRepository() {
         onComplete: (Boolean) -> Unit
     ) {
         val documentId = getDiariesRef().document().id
-
-        // upload diary image to firebase storage, which is separate from firebase firestore
         var addFile = imageUri
-        val addDiaryImageRef = storage.reference.child("Users/${Firebase.auth.currentUser?.uid}/Images/${documentId}")
-        var uploadTask = addDiaryImageRef.putFile(addFile!!)
+        val addDiaryImageRef = storage.reference.child("Users/${getUserId()}/Images/$documentId")
 
-        uploadTask.isComplete // check if upload is complete
-
+        addDiaryImageRef.putFile(addFile!!).addOnSuccessListener {
             addDiaryImageRef.downloadUrl.addOnSuccessListener { Url ->
-            // get the download url of the image
-                val imageUrl = Url.toString()
 
                 val diary = Diaries(
                     userId = userId,
                     diaryId = documentId,
                     diaryTitle = title,
-                    imageUrl = imageUrl,
+                    imageUrl = Url.toString(),
                     diaryDescription = description,
                     diaryCreatedDate = createdDate
                 )
@@ -234,6 +227,35 @@ class StorageRepository() {
                     .addOnCompleteListener { result ->
                         onComplete.invoke(result.isSuccessful)
                     }
+
+            }
+        }
+    }
+
+    fun addDiaryUrl(
+        userId: String,
+        title: String,
+        imageUrl: String,
+        description: String,
+        createdDate: Timestamp,
+        onComplete: (Boolean) -> Unit
+    ) {
+        val documentId = getDiariesRef().document().id
+
+        val diary = Diaries(
+            userId = userId,
+            diaryId = documentId,
+            diaryTitle = title,
+            imageUrl = imageUrl,
+            diaryDescription = description,
+            diaryCreatedDate = createdDate
+        )
+
+        getDiariesRef()
+            .document(documentId)
+            .set(diary)
+            .addOnCompleteListener { result ->
+                onComplete.invoke(result.isSuccessful)
             }
 
     }
@@ -258,15 +280,14 @@ class StorageRepository() {
         onResult: (Boolean) -> Unit
     ) {
 
-        // upload diary image to firebase storage, which is separate from firebase firestore
         var updateFile = imageUri
         val updateDiaryImageRef = storage.reference.child("Users/${Firebase.auth.currentUser?.uid}/Images/${diaryId}")
         var updateUploadTask = updateDiaryImageRef.putFile(updateFile!!)
 
-        updateUploadTask.isComplete // check if upload is complete
+        updateUploadTask.isComplete
 
         updateDiaryImageRef.downloadUrl.addOnSuccessListener { Url ->
-            // get the download url of the image
+
             val imageUrl = Url.toString()
 
             val updateData = hashMapOf<String, Any>(

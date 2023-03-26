@@ -97,8 +97,7 @@ fun EntryScreen(
                     navController.popBackStack()
                 }
             }
-
-
+            
             MaterialDialog(
                 dialogState = dialogState,
                 buttons = {
