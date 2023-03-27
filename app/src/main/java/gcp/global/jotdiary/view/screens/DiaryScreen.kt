@@ -10,9 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,7 +31,6 @@ import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import gcp.global.jotdiary.R
 import gcp.global.jotdiary.controller.DiaryViewmodel
-import gcp.global.jotdiary.model.repository.StorageRepository
 import gcp.global.jotdiary.view.components.DiaryNestedTopBar
 import kotlinx.coroutines.launch
 import java.util.*
@@ -48,12 +44,7 @@ fun DiaryScreen(
 ) {
     val diaryUiState = diaryViewmodel.diaryUiState
 
-    val isFormsNotBlank = diaryUiState.title.isNotBlank()
-
     val isDiaryIdNotBlank = diaryId.isNotBlank()
-
-    val icon = if (isFormsNotBlank) Icons.Default.Refresh
-    else Icons.Default.Check
 
     LaunchedEffect(key1 = Unit) {
         if (isDiaryIdNotBlank) {
@@ -62,14 +53,15 @@ fun DiaryScreen(
             diaryViewmodel.resetState()
         }
     }
+
     val scope = rememberCoroutineScope()
 
     val scaffoldState = rememberScaffoldState()
 
     val previousScreen = "Home"
+
     val currentScreen = if (isDiaryIdNotBlank) "Edit: ${diaryUiState.title}" else "Add a new Diary"
 
-    // Outlined text field variables
     val outlinedFieldColors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
         focusedBorderColor = MaterialTheme.colors.primary,
         unfocusedBorderColor = MaterialTheme.colors.primary,
@@ -84,15 +76,11 @@ fun DiaryScreen(
         leadingIconColor = MaterialTheme.colors.primary,
     )
 
-    // take or give an Image from or to the firebase storage
-    val storageRef = StorageRepository().storage.reference
     var pickedPhoto by remember { mutableStateOf<Uri?>(null) }
 
     if (pickedPhoto != null) {
-        // Image selected
         diaryViewmodel.onImageChange(pickedPhoto)
     } else {
-        // No image selected
         diaryViewmodel.onImageChange(null)
     }
 
@@ -101,7 +89,6 @@ fun DiaryScreen(
         onResult = { uri -> pickedPhoto = uri }
     )
 
-    // Date Variables
     val dialogState = rememberMaterialDialogState()
     val calendar = GregorianCalendar.getInstance()
     var day = calendar.get(Calendar.DAY_OF_MONTH)
@@ -112,19 +99,22 @@ fun DiaryScreen(
 
     val saveOrUpdate = if (isDiaryIdNotBlank) "Update This Diary" else "Save Your New Diary"
 
-    var selectedImage = diaryUiState.imageUri
-
-    /*
-    val request = ImageRequest.Builder(LocalContext.current)
-        .data("${selectedImage?.path}")
-        .build()
-     */
-
-    var request = selectedImage
-
     Scaffold(scaffoldState = scaffoldState,
         topBar = { DiaryNestedTopBar(previousScreen = previousScreen, currentScreen = currentScreen, navController = navController, diaryViewmodel = diaryViewmodel) }
     ) { padding ->
+
+
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(onClick = { /*TODO*/ }) {
+
+                }
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -139,7 +129,6 @@ fun DiaryScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
 
-                // Date Calender
                 if (diaryUiState.diaryAddedStatus) {
                     scope.launch {
                         scaffoldState.snackbarHostState
@@ -199,8 +188,6 @@ fun DiaryScreen(
                     }
                 }
 
-
-                // Date fields
                 Column(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
@@ -209,12 +196,11 @@ fun DiaryScreen(
                     horizontalAlignment = Alignment.End
                 ) {
 
-                    // Date Picker
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End,
                     ) {
-                        // Display Date in small text
+
                         Text(
                             text = "${diaryUiState.createdDate.toDate().date}/${diaryUiState.createdDate.toDate().month}/${diaryUiState.createdDate.toDate().year.plus(1900)}",
                             modifier = Modifier.padding(8.dp),
@@ -225,7 +211,6 @@ fun DiaryScreen(
                             )
                         )
 
-                        // Date Picker Button
                         IconButton(onClick = { dialogState.show() }) {
                             Icon(
                                 imageVector = Icons.Default.DateRange,
@@ -237,7 +222,6 @@ fun DiaryScreen(
 
                 }
 
-                // Selection fields
                 Column(
                     modifier = Modifier
                         .padding(16.dp)
@@ -247,7 +231,6 @@ fun DiaryScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
-                    // Title Picker
                     Column(
                         modifier = Modifier
                             .padding(vertical = 8.dp)
@@ -256,7 +239,6 @@ fun DiaryScreen(
                         verticalArrangement = Arrangement.SpaceEvenly
                     ) {
 
-                        // Title
                         Text(
                             text = "Diary Title",
                             style = TextStyle(
@@ -267,7 +249,6 @@ fun DiaryScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        // Title input
                         OutlinedTextField(
                             value = diaryUiState.title,
                             onValueChange = {
@@ -285,7 +266,6 @@ fun DiaryScreen(
 
                     }
 
-                    // Description Picker
                     Column(
                         modifier = Modifier
                             .padding(vertical = 8.dp)
@@ -293,7 +273,7 @@ fun DiaryScreen(
                             .wrapContentHeight(),
                         verticalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        // Description
+
                         Text(
                             text = "Diary Description",
                             style = TextStyle(
@@ -304,7 +284,6 @@ fun DiaryScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        // Description input
                         OutlinedTextField(
                             value = diaryUiState.description,
                             onValueChange = {
@@ -325,7 +304,6 @@ fun DiaryScreen(
 
             }
 
-            // Image and Actions
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -337,7 +315,10 @@ fun DiaryScreen(
                 if (pickedPhoto != null) {
                     coilImage(Uri = pickedPhoto)
                 } else {
-                    coilImage(Url = diaryUiState.imageUrl, Modifier = Modifier.fillMaxWidth().height(250.dp).padding(24.dp), Shape = MaterialTheme.shapes.medium)
+                    coilImage(Url = diaryUiState.imageUrl, Modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                        .padding(24.dp), Shape = MaterialTheme.shapes.medium)
                 }
 
                 Row(
@@ -348,15 +329,13 @@ fun DiaryScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Image Picker
+
                     Button(
                         onClick = {
-                            // Open the users gallery, and get the image
+
                             singlePhotoLauncher.launch(
                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                             )
-
-                            //Log.d("Diary", "Imageeee Uri: ${ActivityResultContracts.PickVisualMedia.ImageOnly}")
 
                         },
                         modifier = Modifier
@@ -374,13 +353,24 @@ fun DiaryScreen(
                         )
                     }
 
-                    // Save or Update
                     Button(
                         onClick = {
-                            if (isDiaryIdNotBlank) {
-                                diaryViewmodel?.updateDiary(diaryId = diaryId)
+                            if (pickedPhoto == null && (diaryUiState.imageUri == null || diaryUiState.imageUrl == "")) {
+                                scope.launch {
+                                    scaffoldState.snackbarHostState.showSnackbar("No Image Selected")
+                                    diaryViewmodel.onImageChangeUrl("https://cdn11.bigcommerce.com/s-3uewkq06zr/images/stencil/1280x1280/products/258/543/fluorescent_pink__88610.1492541080.png?c=2")
+                                    diaryViewmodel.addDiaryUrl()
+                                    diaryViewmodel.resetDiaryAddedStatus()
+                                }
+                            } else if (pickedPhoto != null && (diaryUiState.imageUri != null) ) {
+                                scope.launch {
+                                    scaffoldState.snackbarHostState.showSnackbar("Uploading Image...")
+                                    diaryViewmodel.addDiary()
+                                        scaffoldState.snackbarHostState.showSnackbar("Image Uploaded")
+                                    diaryViewmodel.resetDiaryAddedStatus()
+                                }
                             } else {
-                                diaryViewmodel?.addDiary()
+                                diaryViewmodel?.updateDiary(diaryId = diaryId)
                             }
                         },
                         modifier = Modifier
@@ -399,10 +389,8 @@ fun DiaryScreen(
                     }
                 }
             }
-
         }
     }
-
 }
 
 @Composable
@@ -424,6 +412,7 @@ fun coilImage(Url: String, Modifier: Modifier, Shape: Shape) {
             contentScale = ContentScale.Crop
         )
     }
+
 }
 
 @Composable
@@ -442,47 +431,5 @@ fun coilImage(Uri: Uri?) {
             contentScale = ContentScale.Crop,
         )
     }
+
 }
-
-@Composable
-fun coilImage() {
-
-    Card(
-        modifier = Modifier
-            .width(300.dp)
-            .height(250.dp)
-            .padding(16.dp),
-    ) {
-
-        Row(
-            modifier = Modifier
-                .fillMaxSize(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Icon(
-                painter = painterResource(id = R.drawable.saddest),
-                contentDescription = "No Image Found",
-                modifier = Modifier
-                    .size(24.dp)
-            )
-            Text(
-                text = "No Image Found",
-                style = TextStyle(
-                    fontStyle = MaterialTheme.typography.body1.fontStyle,
-                    color = MaterialTheme.colors.onSurface,
-                    fontSize = 16.sp,
-                )
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.saddest),
-                contentDescription = "No Image Found",
-                modifier = Modifier
-                    .size(24.dp)
-            )
-
-        }
-    }
-}
-

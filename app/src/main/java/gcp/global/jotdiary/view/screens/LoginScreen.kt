@@ -29,7 +29,9 @@ fun LoginScreen(
 ) {
 
     val loginUiState = loginViewModel?.loginUiState
+
     val isError = loginUiState?.loginError != null
+
     val context = LocalContext.current
 
     val loginTextfieldStyle: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
@@ -139,8 +141,6 @@ fun LoginScreen(
                 )
             }
 
-            //Spacer(modifier = Modifier.size(8.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
@@ -163,7 +163,6 @@ fun LoginScreen(
                 onNavToHomePage.invoke()
             }
         }
-
     }
 }
 
@@ -285,8 +284,6 @@ fun SignUpScreen(
                 text = "Sign Up",
                 color = MaterialTheme.colors.primary)
         }
-
-        //Spacer(modifier = Modifier.size(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),

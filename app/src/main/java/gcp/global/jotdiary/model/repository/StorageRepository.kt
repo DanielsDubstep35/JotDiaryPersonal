@@ -32,6 +32,9 @@ class StorageRepository() {
 
         val diariesRef = Firebase.firestore.collection(USERS_COLLECTION_REF).document(getUserId()).collection(DIARIES_COLLECTION_REF)
 
+        println("DiariesRef current user: ${getUserId()}")
+        println("Path is ${diariesRef.path}")
+
         return diariesRef
     }
 
@@ -146,6 +149,9 @@ class StorageRepository() {
                 onResult(it.isSuccessful)
             }
     }
+
+
+    // Diary Functions
 
     fun getUserDiaries(
         userId: String

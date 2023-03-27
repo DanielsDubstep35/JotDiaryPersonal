@@ -23,30 +23,12 @@ fun BottomNavigationHome() {
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
 
-            /*
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(Icons.Filled.DateRange, contentDescription = null, tint = MaterialTheme.colors.secondary)
-            }
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(Icons.Default.AccountCircle, contentDescription = null, tint = MaterialTheme.colors.secondary)
-            }
-            */
-
             IconButton(
                 onClick = { },
                 enabled = false
             ) {
 
             }
-
-            /*
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(Icons.Default.Favorite, contentDescription = null, tint = MaterialTheme.colors.secondary)
-            }
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(Icons.Default.Settings, contentDescription = null, tint = MaterialTheme.colors.secondary)
-            }
-            */
 
         }
     }

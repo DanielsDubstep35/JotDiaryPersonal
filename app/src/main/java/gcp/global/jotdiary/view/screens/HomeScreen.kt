@@ -1,6 +1,5 @@
 package gcp.global.jotdiary.view.screens
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -27,7 +26,6 @@ import gcp.global.jotdiary.model.models.Diaries
 import gcp.global.jotdiary.model.repository.Resources
 import gcp.global.jotdiary.view.components.BottomNavigationHome
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Home(
     homeViewModel: HomeViewModel?,
@@ -42,15 +40,10 @@ fun Home(
         mutableStateOf(false)
     }
 
-    var calenderDialog by remember {
-        mutableStateOf(false)
-    }
-
     var selectedDiary: Diaries? by remember {
         mutableStateOf(null)
     }
 
-    val scope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
 
     LaunchedEffect(key1 = Unit){
@@ -128,6 +121,7 @@ fun Home(
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
             when (homeUiState.diariesList) {
+
                 is Resources.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier
@@ -135,6 +129,7 @@ fun Home(
                             .wrapContentSize(align = Alignment.Center)
                     )
                 }
+
                 is Resources.Success -> {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(1),
@@ -158,6 +153,7 @@ fun Home(
                             )
                         }
                     }
+
                     AnimatedVisibility(visible = editDiaryDialog) {
                         AlertDialog(
                             onDismissRequest = {
@@ -201,25 +197,27 @@ fun Home(
                             }
                         )
                     }
-
                 }
-                else -> {
+
+                is Resources.Failure -> {
                     Text(
                         text = homeUiState
                             .diariesList.throwable?.localizedMessage ?: "Unknown Error",
                         color = Color.Black
                     )
 
-                    Log.d("HomeScreen", "Error: ${homeUiState.diariesList.throwable?.localizedMessage}")
                 }
+
             }
         }
     }
+
     LaunchedEffect(key1 = homeViewModel?.hasUser){
         if (homeViewModel?.hasUser == false){
             navToLoginPage.invoke()
         }
     }
+
 }
 
 @OptIn(ExperimentalFoundationApi::class)
