@@ -5,7 +5,6 @@ import com.google.firebase.Timestamp
 /**
  * class Daries
  * This model stores attributes of the Diaries.
- *
  */
 
 data class Diaries(
