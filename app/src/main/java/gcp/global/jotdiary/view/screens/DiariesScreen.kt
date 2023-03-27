@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import gcp.global.jotdiary.R
 import gcp.global.jotdiary.controller.*
-import gcp.global.jotdiary.model.models.Entries
+import gcp.global.jotdiary.model.models.Moment
 import gcp.global.jotdiary.model.repository.Resources
 import gcp.global.jotdiary.view.components.NestedTopBar
 
@@ -45,7 +45,7 @@ fun DiariesScreen(
     var openDialog by remember {
         mutableStateOf(false)
     }
-    var selectedEntry: Entries? by remember {
+    var selectedEntry: Moment? by remember {
         mutableStateOf(null)
     }
 
@@ -77,7 +77,7 @@ fun DiariesScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            when (diariesUiState.entriesList) {
+            when (diariesUiState.momentList) {
 
                 is Resources.Loading -> {
                     CircularProgressIndicator(
@@ -93,16 +93,16 @@ fun DiariesScreen(
                         contentPadding = PaddingValues(16.dp),
                     ) {
                         items(
-                            diariesUiState.entriesList.data ?: emptyList()
+                            diariesUiState.momentList.data ?: emptyList()
                         ) { entry ->
                             EntryItem(
-                                entries = entry,
+                                moment = entry,
                                 onLongClick = {
                                     openDialog = true
                                     selectedEntry = entry
                                 },
                             ) {
-                                onEntryClick.invoke(entry.entryId, diaryId)
+                                onEntryClick.invoke(entry.momentId, diaryId)
                             }
                         }
                     }
@@ -116,7 +116,7 @@ fun DiariesScreen(
                             confirmButton = {
                                 Button(
                                     onClick = {
-                                        selectedEntry?.entryId?.let {
+                                        selectedEntry?.momentId?.let {
                                             diariesViewmodel.deleteEntry(it, diaryId)
                                         }
                                         openDialog = false
@@ -141,7 +141,7 @@ fun DiariesScreen(
                 is Resources.Failure -> {
                     Text(
                         text = diariesUiState
-                            .entriesList.throwable?.localizedMessage ?: "Unknown Error",
+                            .momentList.throwable?.localizedMessage ?: "Unknown Error",
                         color = Color.Black
                     )
 
@@ -154,7 +154,7 @@ fun DiariesScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EntryItem(
-    entries: Entries,
+    moment: Moment,
     onLongClick: () -> Unit,
     onClick: () -> Unit,
 ) {
@@ -189,7 +189,7 @@ fun EntryItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = entries.entryName,
+                    text = moment.momentName,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Clip,
@@ -202,7 +202,7 @@ fun EntryItem(
                 )
 
                 Text(
-                    text = "${entries.entryDate.toDate().date}/${entries.entryDate.toDate().month}/${entries.entryDate.toDate().year.plus(1900)}",
+                    text = "${moment.momentDate.toDate().date}/${moment.momentDate.toDate().month}/${moment.momentDate.toDate().year.plus(1900)}",
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Clip,
@@ -222,7 +222,7 @@ fun EntryItem(
             )
 
             Text(
-                text = entries.entryDescription,
+                text = moment.momentDescription,
                 maxLines = 5,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(8.dp),
@@ -256,7 +256,7 @@ fun EntryItem(
                 )
 
                 Image(painter = painterResource(
-                    id = when (entries.entryMood) {
+                    id = when (moment.momentMood) {
                         1 -> R.drawable.saddest
                         2 -> R.drawable.sadder
                         3 -> R.drawable.sad

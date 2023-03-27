@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import gcp.global.jotdiary.controller.HomeUiState
 import gcp.global.jotdiary.controller.HomeViewModel
-import gcp.global.jotdiary.model.models.Diaries
+import gcp.global.jotdiary.model.models.Diary
 import gcp.global.jotdiary.model.repository.Resources
 import gcp.global.jotdiary.view.components.BottomNavigationHome
 
@@ -40,7 +40,7 @@ fun Home(
         mutableStateOf(false)
     }
 
-    var selectedDiary: Diaries? by remember {
+    var selectedDiary: Diary? by remember {
         mutableStateOf(null)
     }
 
@@ -120,7 +120,7 @@ fun Home(
         bottomBar = { BottomNavigationHome() },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            when (homeUiState.diariesList) {
+            when (homeUiState.diaryList) {
 
                 is Resources.Loading -> {
                     CircularProgressIndicator(
@@ -136,10 +136,10 @@ fun Home(
                         contentPadding = PaddingValues(4.dp),
                     ) {
                         items(
-                            homeUiState.diariesList.data ?: emptyList()
+                            homeUiState.diaryList.data ?: emptyList()
                         ) { diary ->
                             DiaryItem(
-                                diaries = diary,
+                                diary = diary,
                                 onLongClick = {
                                     editDiaryDialog = true
                                     selectedDiary = diary
@@ -202,7 +202,7 @@ fun Home(
                 is Resources.Failure -> {
                     Text(
                         text = homeUiState
-                            .diariesList.throwable?.localizedMessage ?: "Unknown Error",
+                            .diaryList.throwable?.localizedMessage ?: "Unknown Error",
                         color = Color.Black
                     )
 
@@ -223,7 +223,7 @@ fun Home(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DiaryItem(
-    diaries: Diaries,
+    diary: Diary,
     onDiaryEditClick: () -> Unit,
     onLongClick: () -> Unit,
     onClick: () -> Unit,
@@ -247,7 +247,7 @@ fun DiaryItem(
             ) {
 
                 Text(
-                    text = diaries.diaryTitle,
+                    text = diary.diaryTitle,
                     style = MaterialTheme.typography.h6,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
@@ -262,7 +262,7 @@ fun DiaryItem(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "${diaries.diaryCreatedDate.toDate().date}/${diaries.diaryCreatedDate.toDate().month}/${diaries.diaryCreatedDate.toDate().year.plus(1900)}",
+                        text = "${diary.diaryCreatedDate.toDate().date}/${diary.diaryCreatedDate.toDate().month}/${diary.diaryCreatedDate.toDate().year.plus(1900)}",
                         style = MaterialTheme.typography.body1,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -295,7 +295,7 @@ fun DiaryItem(
             )
 
             coilImage(
-                Url = diaries.imageUrl,
+                Url = diary.imageUrl,
                 Modifier = Modifier
                     .fillMaxWidth()
                     .height(270.dp),
@@ -310,7 +310,7 @@ fun DiaryItem(
             )
 
             Text(
-                text = diaries.diaryDescription,
+                text = diary.diaryDescription,
                 style = MaterialTheme.typography.body1,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,

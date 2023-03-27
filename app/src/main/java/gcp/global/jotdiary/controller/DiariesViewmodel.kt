@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import gcp.global.jotdiary.model.models.Entries
+import gcp.global.jotdiary.model.models.Moment
 import gcp.global.jotdiary.model.repository.Resources
 import gcp.global.jotdiary.model.repository.StorageRepository
 import kotlinx.coroutines.launch
@@ -45,7 +45,7 @@ class DiariesViewmodel(
     **/
     private fun getUserEntries(diaryId:String) = viewModelScope.launch {
         repository.getUserEntries(diaryId).collect {
-            diariesUiState = diariesUiState.copy(entriesList = it)
+            diariesUiState = diariesUiState.copy(momentList = it)
         }
     }
 
@@ -68,6 +68,6 @@ class DiariesViewmodel(
 * it stores an error. It also keeps track of an entry being deleted.
 **/
 data class DiariesUiState(
-    val entriesList: Resources<List<Entries>> = Resources.Loading(),
+    val momentList: Resources<List<Moment>> = Resources.Loading(),
     val entryDeletedStatus: Boolean = false,
 )

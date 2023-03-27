@@ -7,7 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
-import gcp.global.jotdiary.model.models.Diaries
+import gcp.global.jotdiary.model.models.Diary
 import gcp.global.jotdiary.model.repository.StorageRepository
 
 class DiaryViewmodel (
@@ -71,7 +71,7 @@ class DiaryViewmodel (
         }
     }
 
-    fun setDiaryFields(diary: Diaries){
+    fun setDiaryFields(diary: Diary){
 
         diaryUiState = diaryUiState.copy(
             title = diary.diaryTitle,
@@ -129,5 +129,5 @@ data class DiaryUiState(
     val createdDate: Timestamp = Timestamp.now(),
     val diaryAddedStatus:Boolean = false,
     val updateDiaryStatus:Boolean = false,
-    val selectedDiary:Diaries? = null,
+    val selectedDiary:Diary? = null,
 )
