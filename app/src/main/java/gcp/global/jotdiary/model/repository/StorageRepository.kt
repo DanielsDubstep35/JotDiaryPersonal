@@ -147,9 +147,6 @@ class StorageRepository() {
             }
     }
 
-
-    // Diary Functions
-
     fun getUserDiaries(
         userId: String
     ): Flow<Resources<List<Diaries>>> = callbackFlow {
