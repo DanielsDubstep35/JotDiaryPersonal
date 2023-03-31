@@ -8,8 +8,8 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
-import gcp.global.jotdiary.model.models.Diaries
-import gcp.global.jotdiary.model.models.Entries
+import gcp.global.jotdiary.model.models.Diary
+import gcp.global.jotdiary.model.models.Moment
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -47,7 +47,7 @@ class StorageRepository() {
 
     fun getUserEntries(
         diaryId: String
-    ): Flow<Resources<List<Entries>>> = callbackFlow {
+    ): Flow<Resources<List<Moment>>> = callbackFlow {
         var snapshotStateListener:ListenerRegistration? = null
 
         try {
@@ -55,7 +55,7 @@ class StorageRepository() {
                 .orderBy("entryId")
                 .addSnapshotListener{ snapshot, e ->
                     val response = if (snapshot != null) {
-                        val entries = snapshot.toObjects(Entries::class.java)
+                        val entries = snapshot.toObjects(Moment::class.java)
                         Resources.Success(data = entries)
                     } else {
                         Resources.Failure(throwable = e)
@@ -76,13 +76,13 @@ class StorageRepository() {
         diaryId: String,
         entryId: String,
         onError: (Throwable?) -> Unit,
-        onSuccess: (Entries?) -> Unit
+        onSuccess: (Moment?) -> Unit
     ) {
         getEntriesRef(diaryId)
             .document(entryId)
             .get()
             .addOnSuccessListener {
-                onSuccess.invoke(it?.toObject(Entries::class.java))
+                onSuccess.invoke(it?.toObject(Moment::class.java))
             }
             .addOnFailureListener {result ->
                 onError.invoke(result.cause)
@@ -100,12 +100,12 @@ class StorageRepository() {
     ) {
         val documentId = getEntriesRef(diaryId).document().id
 
-        val entry = Entries(
-            entryId = documentId,
-            entryName = name,
-            entryDescription = description,
-            entryMood = mood,
-            entryDate = date
+        val entry = Moment(
+            momentId = documentId,
+            momentName = name,
+            momentDescription = description,
+            momentMood = mood,
+            momentDate = date
         )
         getEntriesRef(diaryId)
             .document(documentId)
@@ -155,7 +155,7 @@ class StorageRepository() {
 
     fun getUserDiaries(
         userId: String
-    ): Flow<Resources<List<Diaries>>> = callbackFlow {
+    ): Flow<Resources<List<Diary>>> = callbackFlow {
         var snapshotStateListener:ListenerRegistration? = null
 
         try {
@@ -165,7 +165,7 @@ class StorageRepository() {
                 .whereEqualTo("userId", userId)
                 .addSnapshotListener{ snapshot, e ->
                     val response = if (snapshot != null) {
-                        val diaries = snapshot.toObjects(Diaries::class.java)
+                        val diaries = snapshot.toObjects(Diary::class.java)
                         Resources.Success(data = diaries)
                     } else {
                         Resources.Failure(throwable = e)
@@ -186,13 +186,13 @@ class StorageRepository() {
     fun getDiary(
         diaryId: String,
         onError: (Throwable?) -> Unit,
-        onSuccess: (Diaries?) -> Unit
+        onSuccess: (Diary?) -> Unit
     ) {
         getDiariesRef()
             .document(diaryId)
             .get()
             .addOnSuccessListener {
-                onSuccess.invoke(it?.toObject(Diaries::class.java))
+                onSuccess.invoke(it?.toObject(Diary::class.java))
             }
             .addOnFailureListener { result ->
                 onError.invoke(result.cause)
@@ -215,7 +215,7 @@ class StorageRepository() {
         addDiaryImageRef.putFile(addFile!!).addOnSuccessListener {
             addDiaryImageRef.downloadUrl.addOnSuccessListener { Url ->
 
-                val diary = Diaries(
+                val diary = Diary(
                     userId = userId,
                     diaryId = documentId,
                     diaryTitle = title,
@@ -245,7 +245,7 @@ class StorageRepository() {
     ) {
         val documentId = getDiariesRef().document().id
 
-        val diary = Diaries(
+        val diary = Diary(
             userId = userId,
             diaryId = documentId,
             diaryTitle = title,

@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Timestamp
-import gcp.global.jotdiary.model.models.Entries
+import gcp.global.jotdiary.model.models.Moment
 import gcp.global.jotdiary.model.repository.StorageRepository
 
 class EntryViewmodel(
@@ -48,12 +48,12 @@ class EntryViewmodel(
         }
     }
 
-    fun setEntryFields(entry: Entries){
+    fun setEntryFields(entry: Moment){
         entryUiState = entryUiState.copy(
-            name = entry.entryName,
-            description = entry.entryDescription,
-            mood = entry.entryMood,
-            date = entry.entryDate,
+            name = entry.momentName,
+            description = entry.momentDescription,
+            mood = entry.momentMood,
+            date = entry.momentDate,
         )
     }
 
@@ -105,5 +105,5 @@ data class EntryUiState(
     val date: Timestamp = Timestamp.now(),
     val entryAddedStatus:Boolean = false,
     val updateEntryStatus:Boolean = false,
-    val selectedEntry:Entries? = null,
+    val selectedEntry:Moment? = null,
 )
