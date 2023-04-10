@@ -24,6 +24,21 @@ fun BottomNavigationHome() {
         ) {
 
             IconButton(
+                onClick = {
+                },
+                enabled = false
+            ) {
+
+            }
+            
+            IconButton(
+                onClick = { },
+                enabled = false
+            ) {
+
+            }
+
+            IconButton(
                 onClick = { },
                 enabled = false
             ) {
