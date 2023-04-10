@@ -1,12 +1,11 @@
 package gcp.global.jotdiary.controller
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import gcp.global.jotdiary.model.models.Diaries
+import gcp.global.jotdiary.model.models.Diary
 import gcp.global.jotdiary.model.repository.Resources
 import gcp.global.jotdiary.model.repository.StorageRepository
 import kotlinx.coroutines.launch
@@ -29,7 +28,7 @@ class HomeViewModel(
                 getUserDiaries(userId)
             }
         } else {
-            homeUiState = homeUiState.copy(diariesList = Resources.Failure(
+            homeUiState = homeUiState.copy(diaryList = Resources.Failure(
                 throwable = Throwable(message = "The User is not Logged In")
             ))
         }
@@ -37,7 +36,7 @@ class HomeViewModel(
 
     private fun getUserDiaries(userId:String) = viewModelScope.launch {
         repository.getUserDiaries(userId).collect {
-            homeUiState = homeUiState.copy(diariesList = it)
+            homeUiState = homeUiState.copy(diaryList = it)
         }
     }
 
@@ -50,7 +49,7 @@ class HomeViewModel(
 }
 
 data class HomeUiState(
-    val diariesList: Resources<List<Diaries>> = Resources.Loading(),
+    val diaryList: Resources<List<Diary>> = Resources.Loading(),
     val diaryDeletedStatus: Boolean = false,
 )
 
