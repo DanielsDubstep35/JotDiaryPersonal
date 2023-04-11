@@ -1,6 +1,7 @@
 package gcp.global.jotdiary.view.screens
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -18,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -26,10 +28,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import gcp.global.jotdiary.R
-import gcp.global.jotdiary.controller.*
-import gcp.global.jotdiary.model.models.Moment
+import gcp.global.jotdiary.model.models.Entries
 import gcp.global.jotdiary.model.repository.Resources
 import gcp.global.jotdiary.view.components.NestedTopBar
+import gcp.global.jotdiary.view.components.audio.coilImage
+import gcp.global.jotdiary.viewmodel.*
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
@@ -45,7 +48,7 @@ fun DiariesScreen(
     var openDialog by remember {
         mutableStateOf(false)
     }
-    var selectedEntry: Moment? by remember {
+    var selectedEntry: Entries? by remember {
         mutableStateOf(null)
     }
 
@@ -55,6 +58,7 @@ fun DiariesScreen(
     val currentScreen = "Entries"
 
     LaunchedEffect(key1 = Unit){
+        Log.d("//////////", "Diary Id: $diaryId")
         diariesViewmodel.loadEntries(diaryId = diaryId)
     }
 
@@ -77,7 +81,7 @@ fun DiariesScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            when (diariesUiState.momentList) {
+            when (diariesUiState.entriesList) {
 
                 is Resources.Loading -> {
                     CircularProgressIndicator(
@@ -93,16 +97,17 @@ fun DiariesScreen(
                         contentPadding = PaddingValues(16.dp),
                     ) {
                         items(
-                            diariesUiState.momentList.data ?: emptyList()
+                            diariesUiState.entriesList.data ?: emptyList()
                         ) { entry ->
                             EntryItem(
-                                moment = entry,
+                                entries = entry,
                                 onLongClick = {
                                     openDialog = true
+                                    Log.d("//////////", "Selected Entry: ${entry}")
                                     selectedEntry = entry
                                 },
                             ) {
-                                onEntryClick.invoke(entry.momentId, diaryId)
+                                onEntryClick.invoke(entry.entryId, diaryId)
                             }
                         }
                     }
@@ -112,25 +117,40 @@ fun DiariesScreen(
                             onDismissRequest = {
                                 openDialog = false
                             },
-                            title = { Text(text = "Delete Diary Entry?") },
+                            title = { Text(
+                                text = "Delete this Entry?",
+                                color = MaterialTheme.colors.onSurface,
+                            ) },
+                            backgroundColor = MaterialTheme.colors.primary,
                             confirmButton = {
                                 Button(
                                     onClick = {
-                                        selectedEntry?.momentId?.let {
-                                            diariesViewmodel.deleteEntry(it, diaryId)
+                                        selectedEntry?.entryId?.let {
+                                            diariesViewmodel?.deleteEntry(it, diaryId)
                                         }
                                         openDialog = false
                                     },
                                     colors = ButtonDefaults.buttonColors(
-                                        backgroundColor = Color.Red
+                                        backgroundColor = MaterialTheme.colors.onSurface
                                     ),
                                 ) {
-                                    Text(text = "Delete")
+                                    Text(
+                                        text = "Delete",
+                                        color = MaterialTheme.colors.primary
+                                    )
                                 }
                             },
                             dismissButton = {
-                                Button(onClick = { openDialog = false }) {
-                                    Text(text = "Cancel")
+                                Button(
+                                    onClick = { openDialog = false },
+                                    colors = ButtonDefaults.buttonColors(
+                                        backgroundColor = Color.Red
+                                    ),
+                                ) {
+                                    Text(
+                                        text = "Cancel",
+                                        color = MaterialTheme.colors.onSurface
+                                    )
                                 }
                             }
                         )
@@ -141,7 +161,7 @@ fun DiariesScreen(
                 is Resources.Failure -> {
                     Text(
                         text = diariesUiState
-                            .momentList.throwable?.localizedMessage ?: "Unknown Error",
+                            .entriesList.throwable?.localizedMessage ?: "Unknown Error",
                         color = Color.Black
                     )
 
@@ -154,7 +174,7 @@ fun DiariesScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EntryItem(
-    moment: Moment,
+    entries: Entries,
     onLongClick: () -> Unit,
     onClick: () -> Unit,
 ) {
@@ -171,10 +191,12 @@ fun EntryItem(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
+        coilImage(Url = entries.entryImageUrl, Modifier = Modifier.width(300.dp).height(200.dp), Shape = RectangleShape)
+
         Column(
             modifier = Modifier
                 .padding(8.dp)
-                .height(450.dp)
+                .height(200.dp)
                 .width(300.dp)
                 .background(
                     color = MaterialTheme.colors.surface,
@@ -189,7 +211,7 @@ fun EntryItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = moment.momentName,
+                    text = entries.entryName,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Clip,
@@ -202,7 +224,7 @@ fun EntryItem(
                 )
 
                 Text(
-                    text = "${moment.momentDate.toDate().date}/${moment.momentDate.toDate().month}/${moment.momentDate.toDate().year.plus(1900)}",
+                    text = "${entries.entryDate.toDate().date}/${entries.entryDate.toDate().month}/${entries.entryDate.toDate().year.plus(1900)}",
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Clip,
@@ -222,7 +244,7 @@ fun EntryItem(
             )
 
             Text(
-                text = moment.momentDescription,
+                text = entries.entryDescription,
                 maxLines = 5,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(8.dp),
@@ -232,13 +254,15 @@ fun EntryItem(
                     fontSize = 16.sp,
                 )
             )
+
         }
 
         Card(
             backgroundColor = MaterialTheme.colors.onSurface,
             shape = MaterialTheme.shapes.small,
             modifier = Modifier
-                .wrapContentSize()
+                .width(300.dp)
+                .wrapContentHeight()
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -256,7 +280,7 @@ fun EntryItem(
                 )
 
                 Image(painter = painterResource(
-                    id = when (moment.momentMood) {
+                    id = when (entries.entryMood) {
                         1 -> R.drawable.saddest
                         2 -> R.drawable.sadder
                         3 -> R.drawable.sad

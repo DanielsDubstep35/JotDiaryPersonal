@@ -20,11 +20,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import gcp.global.jotdiary.controller.HomeUiState
-import gcp.global.jotdiary.controller.HomeViewModel
-import gcp.global.jotdiary.model.models.Diary
+import gcp.global.jotdiary.model.models.Diaries
 import gcp.global.jotdiary.model.repository.Resources
 import gcp.global.jotdiary.view.components.BottomNavigationHome
+import gcp.global.jotdiary.view.components.audio.coilImage
+import gcp.global.jotdiary.viewmodel.HomeUiState
+import gcp.global.jotdiary.viewmodel.HomeViewModel
 
 @Composable
 fun Home(
@@ -40,7 +41,7 @@ fun Home(
         mutableStateOf(false)
     }
 
-    var selectedDiary: Diary? by remember {
+    var selectedDiary: Diaries? by remember {
         mutableStateOf(null)
     }
 
@@ -120,7 +121,7 @@ fun Home(
         bottomBar = { BottomNavigationHome() },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            when (homeUiState.diaryList) {
+            when (homeUiState.diariesList) {
 
                 is Resources.Loading -> {
                     CircularProgressIndicator(
@@ -136,10 +137,10 @@ fun Home(
                         contentPadding = PaddingValues(4.dp),
                     ) {
                         items(
-                            homeUiState.diaryList.data ?: emptyList()
+                            homeUiState.diariesList.data ?: emptyList()
                         ) { diary ->
                             DiaryItem(
-                                diary = diary,
+                                diaries = diary,
                                 onLongClick = {
                                     editDiaryDialog = true
                                     selectedDiary = diary
@@ -160,7 +161,7 @@ fun Home(
                                 editDiaryDialog = false
                             },
                             title = { Text(
-                                text = "Delete Diary Entry?",
+                                text = "Delete this Diary?",
                                 color = MaterialTheme.colors.onSurface,
                             ) },
                             backgroundColor = MaterialTheme.colors.primary,
@@ -202,7 +203,7 @@ fun Home(
                 is Resources.Failure -> {
                     Text(
                         text = homeUiState
-                            .diaryList.throwable?.localizedMessage ?: "Unknown Error",
+                            .diariesList.throwable?.localizedMessage ?: "Unknown Error",
                         color = Color.Black
                     )
 
@@ -223,7 +224,7 @@ fun Home(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DiaryItem(
-    diary: Diary,
+    diaries: Diaries,
     onDiaryEditClick: () -> Unit,
     onLongClick: () -> Unit,
     onClick: () -> Unit,
@@ -247,7 +248,7 @@ fun DiaryItem(
             ) {
 
                 Text(
-                    text = diary.diaryTitle,
+                    text = diaries.diaryTitle,
                     style = MaterialTheme.typography.h6,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
@@ -262,7 +263,7 @@ fun DiaryItem(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "${diary.diaryCreatedDate.toDate().date}/${diary.diaryCreatedDate.toDate().month}/${diary.diaryCreatedDate.toDate().year.plus(1900)}",
+                        text = "${diaries.diaryCreatedDate.toDate().date}/${diaries.diaryCreatedDate.toDate().month}/${diaries.diaryCreatedDate.toDate().year.plus(1900)}",
                         style = MaterialTheme.typography.body1,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -295,7 +296,7 @@ fun DiaryItem(
             )
 
             coilImage(
-                Url = diary.imageUrl,
+                Url = diaries.imageUrl,
                 Modifier = Modifier
                     .fillMaxWidth()
                     .height(270.dp),
@@ -310,7 +311,7 @@ fun DiaryItem(
             )
 
             Text(
-                text = diary.diaryDescription,
+                text = diaries.diaryDescription,
                 style = MaterialTheme.typography.body1,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,

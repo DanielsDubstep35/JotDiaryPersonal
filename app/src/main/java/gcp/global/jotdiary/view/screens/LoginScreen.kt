@@ -19,7 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import gcp.global.jotdiary.R
-import gcp.global.jotdiary.controller.LoginViewModel
+import gcp.global.jotdiary.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(

@@ -5,7 +5,6 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -15,23 +14,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import coil.ImageLoader
 import coil.compose.*
 import com.google.firebase.Timestamp
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
-import gcp.global.jotdiary.R
-import gcp.global.jotdiary.controller.DiaryViewmodel
 import gcp.global.jotdiary.view.components.DiaryNestedTopBar
+import gcp.global.jotdiary.view.components.audio.coilImage
+import gcp.global.jotdiary.viewmodel.DiaryViewmodel
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -313,17 +308,19 @@ fun DiaryScreen(
             ) {
 
                 if (pickedPhoto != null) {
-                    coilImage(Uri = pickedPhoto)
+                    coilImage(Uri = pickedPhoto, Modifier.width(300.dp)
+                        .height(250.dp)
+                        .padding(16.dp), Shape = MaterialTheme.shapes.medium)
                 } else {
                     coilImage(Url = diaryUiState.imageUrl, Modifier = Modifier
                         .fillMaxWidth()
-                        .height(250.dp)
+                        .height(200.dp)
                         .padding(24.dp), Shape = MaterialTheme.shapes.medium)
                 }
 
                 Row(
                     modifier = Modifier
-                        .wrapContentHeight()
+                        .height(100.dp)
                         .fillMaxWidth()
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -355,11 +352,19 @@ fun DiaryScreen(
 
                     Button(
                         onClick = {
-                            if (pickedPhoto == null && (diaryUiState.imageUri == null || diaryUiState.imageUrl == "")) {
+                            if (pickedPhoto == null && (diaryUiState.imageUri == null && diaryUiState.imageUrl == "")) {
                                 scope.launch {
                                     scaffoldState.snackbarHostState.showSnackbar("No Image Selected")
                                     diaryViewmodel.onImageChangeUrl("https://cdn11.bigcommerce.com/s-3uewkq06zr/images/stencil/1280x1280/products/258/543/fluorescent_pink__88610.1492541080.png?c=2")
                                     diaryViewmodel.addDiaryUrl()
+                                    diaryViewmodel.resetDiaryAddedStatus()
+                                }
+                            } else if (pickedPhoto == null && (diaryUiState.imageUri == null && diaryUiState.imageUrl != "") ) {
+                                scope.launch {
+                                    scaffoldState.snackbarHostState.showSnackbar("Using Existing Image...")
+                                    diaryViewmodel.onImageChangeUrl(diaryUiState.imageUrl)
+                                    diaryViewmodel.updateDiary(diaryId = diaryId)
+                                    scaffoldState.snackbarHostState.showSnackbar("Diary Updated")
                                     diaryViewmodel.resetDiaryAddedStatus()
                                 }
                             } else if (pickedPhoto != null && (diaryUiState.imageUri != null) ) {
@@ -370,7 +375,10 @@ fun DiaryScreen(
                                     diaryViewmodel.resetDiaryAddedStatus()
                                 }
                             } else {
-                                diaryViewmodel?.updateDiary(diaryId = diaryId)
+                                scope.launch {
+                                    scaffoldState.snackbarHostState.showSnackbar("ERROR 😭")
+                                    diaryViewmodel.updateDiary(diaryId = diaryId)
+                                }
                             }
                         },
                         modifier = Modifier
@@ -393,43 +401,3 @@ fun DiaryScreen(
     }
 }
 
-@Composable
-fun coilImage(Url: String, Modifier: Modifier, Shape: Shape) {
-
-    val painter = rememberAsyncImagePainter(
-    model = Url,
-    imageLoader = ImageLoader.Builder(LocalContext.current).crossfade(true).placeholder(R.drawable.ic_loading_foreground).crossfade(300).build()
-    )
-
-    Card(
-        modifier = Modifier,
-        shape = Shape
-    ) {
-
-        Image(
-            painter = painter,
-            contentDescription = "ImagePainter",
-            contentScale = ContentScale.Crop
-        )
-    }
-
-}
-
-@Composable
-fun coilImage(Uri: Uri?) {
-
-    Card(
-        modifier = Modifier
-            .width(300.dp)
-            .height(250.dp)
-            .padding(16.dp),
-    ) {
-
-        AsyncImage(
-            model = Uri,
-            contentDescription = "ImagePainter",
-            contentScale = ContentScale.Crop,
-        )
-    }
-
-}

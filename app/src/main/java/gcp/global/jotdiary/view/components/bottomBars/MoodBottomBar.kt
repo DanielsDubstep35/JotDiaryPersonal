@@ -12,7 +12,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
 import gcp.global.jotdiary.R
-import gcp.global.jotdiary.controller.EntryViewmodel
+import gcp.global.jotdiary.viewmodel.EntryViewmodel
 
 @Composable
 fun MoodBottomBar(

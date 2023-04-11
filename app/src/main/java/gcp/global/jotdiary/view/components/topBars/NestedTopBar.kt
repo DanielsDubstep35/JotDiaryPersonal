@@ -9,7 +9,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,8 +21,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import gcp.global.jotdiary.controller.DiaryViewmodel
-import gcp.global.jotdiary.controller.EntryViewmodel
+import gcp.global.jotdiary.viewmodel.DiaryViewmodel
+import gcp.global.jotdiary.viewmodel.EntryViewmodel
 
 @Composable
 fun NestedTopBar(
@@ -30,7 +32,9 @@ fun NestedTopBar(
 ) {
     TopAppBar(
         backgroundColor = MaterialTheme.colors.onSurface,
-        modifier = Modifier.background(MaterialTheme.colors.primary).padding(vertical = 8.dp),
+        modifier = Modifier
+            .background(MaterialTheme.colors.primary)
+            .padding(vertical = 8.dp),
         title = {
             Row (
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -88,7 +92,9 @@ fun DiaryNestedTopBar(
 ) {
     TopAppBar(
         backgroundColor = MaterialTheme.colors.onSurface,
-        modifier = Modifier.background(MaterialTheme.colors.primary).padding(vertical = 8.dp),
+        modifier = Modifier
+            .background(MaterialTheme.colors.primary)
+            .padding(vertical = 8.dp),
         title = {
             Row (
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -142,14 +148,18 @@ fun DiaryNestedTopBar(
 
 @Composable
 fun EntryNestedTopBar(
-    navController: NavController,
+    onImageAdd: () -> Unit,
+    onAudioAdd: () -> Unit,
+    onBackPress: () -> Unit,
     previousScreen: String,
     currentScreen: String,
     entryViewmodel: EntryViewmodel
 ) {
     TopAppBar(
         backgroundColor = MaterialTheme.colors.onSurface,
-        modifier = Modifier.background(MaterialTheme.colors.primary).padding(vertical = 8.dp),
+        modifier = Modifier
+            .background(MaterialTheme.colors.primary)
+            .padding(vertical = 8.dp),
         title = {
             Row (
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -185,7 +195,7 @@ fun EntryNestedTopBar(
         },
         navigationIcon = {
             IconButton(onClick = {
-                navController.popBackStack()
+                onBackPress()
                 entryViewmodel.resetState()
             }) {
                 Icon(
@@ -196,5 +206,27 @@ fun EntryNestedTopBar(
                 )
             }
         },
+        actions = {
+            IconButton(onClick = {
+                onAudioAdd()
+            }) {
+                Icon(
+                    imageVector = Icons.Default.MusicNote,
+                    contentDescription = "Add Audio",
+                    tint = MaterialTheme.colors.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            IconButton(onClick = {
+                onImageAdd()
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Image,
+                    contentDescription = "Add Image",
+                    tint = MaterialTheme.colors.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
     )
 }

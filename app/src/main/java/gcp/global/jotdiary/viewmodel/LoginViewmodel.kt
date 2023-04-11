@@ -1,4 +1,4 @@
-package gcp.global.jotdiary.controller
+package gcp.global.jotdiary.viewmodel
 
 import android.content.Context
 import android.widget.Toast

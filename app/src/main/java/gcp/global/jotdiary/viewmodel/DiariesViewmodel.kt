@@ -1,11 +1,11 @@
-package gcp.global.jotdiary.controller
+package gcp.global.jotdiary.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import gcp.global.jotdiary.model.models.Moment
+import gcp.global.jotdiary.model.models.Entries
 import gcp.global.jotdiary.model.repository.Resources
 import gcp.global.jotdiary.model.repository.StorageRepository
 import kotlinx.coroutines.launch
@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
 * This class is a type of ViewModel that is used to get data from the StorageRepository
 * and display it on the screen. The State, aswell as the data is controlled from here.
 **/
-
 class DiariesViewmodel(
     private val repository: StorageRepository = StorageRepository(),
 ) : ViewModel() {
@@ -25,7 +24,8 @@ class DiariesViewmodel(
 
     /**
     * loadEntries()
-    * This method retrives get everything from the database dependent on the diaryId.
+    * This method retrieves all the entries associated with the diary from the
+     * database via the diaryId.
     * GETTER
     *
     * @param diaryId - unique for every user agent
@@ -45,8 +45,9 @@ class DiariesViewmodel(
     **/
     private fun getUserEntries(diaryId:String) = viewModelScope.launch {
         repository.getUserEntries(diaryId).collect {
-            diariesUiState = diariesUiState.copy(momentList = it)
+            diariesUiState = diariesUiState.copy(entriesList = it)
         }
+
     }
 
     /**
@@ -57,8 +58,10 @@ class DiariesViewmodel(
     * @param diaryId - this points to a specific diary
     * @return - void
     **/
-    fun deleteEntry(entryId:String, diaryId: String) = repository.deleteEntry(entryId = entryId, diaryId = diaryId){
-        diariesUiState = diariesUiState.copy(entryDeletedStatus = it)
+    fun deleteEntry(entryId:String, diaryId: String) = viewModelScope.launch {
+        repository.deleteEntry(entryId = entryId, diaryId = diaryId) {
+            diariesUiState = diariesUiState.copy(entryDeletedStatus = it)
+        }
     }
 
 }
@@ -68,6 +71,6 @@ class DiariesViewmodel(
 * it stores an error. It also keeps track of an entry being deleted.
 **/
 data class DiariesUiState(
-    val momentList: Resources<List<Moment>> = Resources.Loading(),
+    val entriesList: Resources<List<Entries>> = Resources.Loading(),
     val entryDeletedStatus: Boolean = false,
 )

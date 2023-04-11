@@ -5,8 +5,9 @@ import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import gcp.global.jotdiary.controller.*
+import gcp.global.jotdiary.view.navigation.Route
 import gcp.global.jotdiary.view.screens.*
+import gcp.global.jotdiary.viewmodel.*
 
 @Composable
 fun Navigation(
@@ -17,9 +18,11 @@ fun Navigation(
     diaryViewmodel: DiaryViewmodel,
     diariesViewmodel: DiariesViewmodel,
 ) {
+    val navController = rememberNavController()
+
     NavHost(
         navController = navController,
-        startDestination = "main"
+        startDestination = Route.login.name
     ) {
         authGraph(navController, loginViewModel)
         homeGraph(
@@ -38,7 +41,7 @@ fun NavGraphBuilder.authGraph(
 ) {
     navigation(
         startDestination = "signin",
-        route = "login"
+        route = Route.login.name
     ) {
         composable(route = "signin") {
             LoginScreen(
@@ -86,7 +89,7 @@ fun NavGraphBuilder.homeGraph(
 ) {
     navigation(
         startDestination = "home",
-        route = "main",
+        route = Route.main.name
     ) {
         composable("home") {
             Home(
