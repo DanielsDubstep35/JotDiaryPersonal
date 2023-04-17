@@ -21,13 +21,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import gcp.global.jotdiary.viewmodel.DiaryViewmodel
-import gcp.global.jotdiary.viewmodel.EntryViewmodel
+import gcp.global.jotdiary.viewmodel.DiaryViewModel
+import gcp.global.jotdiary.viewmodel.EntryViewModel
 
 @Composable
 fun NestedTopBar(
     navController: NavController,
-    previousScreen: String,
     currentScreen: String,
 ) {
     TopAppBar(
@@ -41,22 +40,6 @@ fun NestedTopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxHeight()
             ) {
-                BasicText(
-                    text = previousScreen,
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontFamily = MaterialTheme.typography.body1.fontFamily,
-                        color = MaterialTheme.colors.primary,
-                        textAlign = TextAlign.End
-                    ),
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "Back Button",
-                    tint = MaterialTheme.colors.primary,
-                    modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp)
-                )
                 BasicText(
                     text = currentScreen,
                     style = TextStyle(
@@ -84,11 +67,39 @@ fun NestedTopBar(
 }
 
 @Composable
+fun GeneralTopBar(
+    currentScreen: String,
+) {
+    TopAppBar(
+        backgroundColor = MaterialTheme.colors.onSurface,
+        modifier = Modifier
+            .background(MaterialTheme.colors.primary)
+            .padding(vertical = 8.dp),
+        title = {
+            Row (
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxHeight().fillMaxWidth()
+            ) {
+                BasicText(
+                    text = currentScreen,
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontFamily = MaterialTheme.typography.body1.fontFamily,
+                        color = MaterialTheme.colors.primary,
+                    ),
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        },
+    )
+}
+
+@Composable
 fun DiaryNestedTopBar(
     navController: NavController,
-    previousScreen: String,
     currentScreen: String,
-    diaryViewmodel: DiaryViewmodel
+    diaryViewmodel: DiaryViewModel?
 ) {
     TopAppBar(
         backgroundColor = MaterialTheme.colors.onSurface,
@@ -101,23 +112,6 @@ fun DiaryNestedTopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxHeight()
             ) {
-                BasicText(
-                    text = previousScreen,
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontFamily = MaterialTheme.typography.body1.fontFamily,
-                        color = MaterialTheme.colors.primary,
-                        textAlign = TextAlign.End
-                    ),
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
-                )
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "pointing arrow",
-                    tint = MaterialTheme.colors.primary,
-                    modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp)
-                )
                 BasicText(
                     text = currentScreen,
                     style = TextStyle(
@@ -133,7 +127,7 @@ fun DiaryNestedTopBar(
         navigationIcon = {
             IconButton(onClick = {
                 navController.popBackStack()
-                diaryViewmodel.resetState()
+                diaryViewmodel?.resetState()
             }) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
@@ -151,9 +145,8 @@ fun EntryNestedTopBar(
     onImageAdd: () -> Unit,
     onAudioAdd: () -> Unit,
     onBackPress: () -> Unit,
-    previousScreen: String,
     currentScreen: String,
-    entryViewmodel: EntryViewmodel
+    entryViewmodel: EntryViewModel?
 ) {
     TopAppBar(
         backgroundColor = MaterialTheme.colors.onSurface,
@@ -166,22 +159,6 @@ fun EntryNestedTopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxHeight()
             ) {
-                BasicText(
-                    text = previousScreen,
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontFamily = MaterialTheme.typography.body1.fontFamily,
-                        color = MaterialTheme.colors.primary,
-                        textAlign = TextAlign.End
-                    ),
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "Back Button",
-                    tint = MaterialTheme.colors.primary,
-                    modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp)
-                )
                 BasicText(
                     text = currentScreen,
                     style = TextStyle(
@@ -196,7 +173,7 @@ fun EntryNestedTopBar(
         navigationIcon = {
             IconButton(onClick = {
                 onBackPress()
-                entryViewmodel.resetState()
+                entryViewmodel?.resetState()
             }) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,

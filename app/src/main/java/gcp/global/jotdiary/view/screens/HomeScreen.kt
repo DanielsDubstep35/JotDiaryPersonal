@@ -2,6 +2,7 @@ package gcp.global.jotdiary.view.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -15,15 +16,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import gcp.global.jotdiary.R
 import gcp.global.jotdiary.model.models.Diaries
 import gcp.global.jotdiary.model.repository.Resources
-import gcp.global.jotdiary.view.components.BottomNavigationHome
+import gcp.global.jotdiary.view.components.bottomBars.BottomNavigationHome
 import gcp.global.jotdiary.view.components.audio.coilImage
+import gcp.global.jotdiary.view.theme.JotDiaryTheme
 import gcp.global.jotdiary.viewmodel.HomeUiState
 import gcp.global.jotdiary.viewmodel.HomeViewModel
 
@@ -31,9 +39,11 @@ import gcp.global.jotdiary.viewmodel.HomeViewModel
 fun Home(
     homeViewModel: HomeViewModel?,
     onDiaryClick: (id: String) -> Unit,
-    navToDiaryPage: () -> Unit,
-    navToDiaryEditPage: (id: String) -> Unit,
-    navToLoginPage: () -> Unit
+    onNavToDiaryPage: () -> Unit,
+    onNavToDiaryEditPage: (id: String) -> Unit,
+    onNavToLoginPage: () -> Unit,
+    onNavToSettingsPage: () -> Unit,
+    onNavToCalenderPage: () -> Unit,
 ) {
     val homeUiState = homeViewModel?.homeUiState ?: HomeUiState()
 
@@ -55,8 +65,8 @@ fun Home(
         scaffoldState = scaffoldState,
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navToDiaryPage.invoke() },
-                backgroundColor = Color.Red
+                onClick = { onNavToDiaryPage.invoke() },
+                backgroundColor = MaterialTheme.colors.onSurface,
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -74,7 +84,13 @@ fun Home(
                         modifier = Modifier
                             .width(65.dp)
                     ) {
-
+                        Image(
+                            painter = painterResource(id = R.drawable.final_logo),
+                            contentDescription = "JotDiary Logo",
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(40.dp)
+                        )
                     }
                 },
                 actions = {
@@ -84,7 +100,7 @@ fun Home(
                     ) {
                         IconButton(onClick = {
                             homeViewModel?.signOut()
-                            navToLoginPage.invoke()
+                            onNavToLoginPage.invoke()
                         }) {
                             Column {
                                 Icon(
@@ -118,7 +134,7 @@ fun Home(
                 backgroundColor = MaterialTheme.colors.primary,
             )
         },
-        bottomBar = { BottomNavigationHome() },
+        bottomBar = { BottomNavigationHome(navToSettingsScreen = onNavToSettingsPage, navToCalenderScreen = onNavToCalenderPage) },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
             when (homeUiState.diariesList) {
@@ -149,13 +165,15 @@ fun Home(
                                     onDiaryClick.invoke(diary.diaryId)
                                 },
                                 onDiaryEditClick = {
-                                    navToDiaryEditPage.invoke(diary.diaryId)
+                                    onNavToDiaryEditPage.invoke(diary.diaryId)
                                 }
                             )
                         }
                     }
 
-                    AnimatedVisibility(visible = editDiaryDialog) {
+                    AnimatedVisibility(
+                        visible = editDiaryDialog
+                    ) {
                         AlertDialog(
                             onDismissRequest = {
                                 editDiaryDialog = false
@@ -179,7 +197,7 @@ fun Home(
                                 ) {
                                     Text(
                                         text = "Delete",
-                                        color = MaterialTheme.colors.primary
+                                        color = MaterialTheme.colors.surface
                                     )
                                 }
                             },
@@ -187,7 +205,7 @@ fun Home(
                                 Button(
                                     onClick = { editDiaryDialog = false },
                                     colors = ButtonDefaults.buttonColors(
-                                        backgroundColor = Color.Red
+                                        backgroundColor = MaterialTheme.colors.surface
                                     ),
                                 ) {
                                     Text(
@@ -215,7 +233,7 @@ fun Home(
 
     LaunchedEffect(key1 = homeViewModel?.hasUser){
         if (homeViewModel?.hasUser == false){
-            navToLoginPage.invoke()
+            onNavToLoginPage.invoke()
         }
     }
 
@@ -238,7 +256,7 @@ fun DiaryItem(
             .padding(8.dp)
             .fillMaxWidth()
             .height(400.dp),
-        backgroundColor = MaterialTheme.colors.onBackground,
+        backgroundColor = MaterialTheme.colors.surface,
     ) {
         Column {
             Row(

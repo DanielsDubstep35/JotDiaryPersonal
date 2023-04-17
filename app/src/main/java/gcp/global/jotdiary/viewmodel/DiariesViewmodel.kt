@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 * This class is a type of ViewModel that is used to get data from the StorageRepository
 * and display it on the screen. The State, aswell as the data is controlled from here.
 **/
-class DiariesViewmodel(
+class DiariesViewModel(
     private val repository: StorageRepository = StorageRepository(),
 ) : ViewModel() {
 

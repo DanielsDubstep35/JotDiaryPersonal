@@ -15,18 +15,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import gcp.global.jotdiary.R
 import gcp.global.jotdiary.viewmodel.LoginViewModel
+import gcp.global.jotdiary.viewmodel.SettingsUiState
+import gcp.global.jotdiary.viewmodel.SettingsViewModel
 
 @Composable
 fun LoginScreen(
     loginViewModel: LoginViewModel? = null,
     onNavToHomePage:() -> Unit,
     onNavToSignUpPage:() -> Unit,
+    preferences: SettingsViewModel?
 ) {
+
+    val settingsUiState = preferences?.settingsUiState ?: SettingsUiState()
 
     val loginUiState = loginViewModel?.loginUiState
 
@@ -35,18 +39,21 @@ fun LoginScreen(
     val context = LocalContext.current
 
     val loginTextfieldStyle: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
-        focusedBorderColor = MaterialTheme.colors.primary,
-        unfocusedBorderColor = MaterialTheme.colors.primary,
-        focusedLabelColor = MaterialTheme.colors.primary,
-        unfocusedLabelColor = MaterialTheme.colors.primary,
-        cursorColor = MaterialTheme.colors.primary,
+        focusedBorderColor = MaterialTheme.colors.onSurface,
+        unfocusedBorderColor = MaterialTheme.colors.onSurface,
+        focusedLabelColor = MaterialTheme.colors.onSurface,
+        unfocusedLabelColor = MaterialTheme.colors.onSurface,
+        cursorColor = MaterialTheme.colors.onSurface,
         errorCursorColor = Color.Red,
         errorLabelColor = Color.Red,
         errorTrailingIconColor = Color.Red,
         errorLeadingIconColor = Color.Red,
-        trailingIconColor = MaterialTheme.colors.primary,
-        leadingIconColor = MaterialTheme.colors.primary,
+        trailingIconColor = MaterialTheme.colors.onSurface,
+        leadingIconColor = MaterialTheme.colors.onSurface,
+        textColor = MaterialTheme.colors.onSurface,
     )
+
+    var themeEmoji = if (settingsUiState.darkMode) "🌙" else "☀️"
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -54,11 +61,21 @@ fun LoginScreen(
         verticalArrangement = Arrangement.SpaceBetween
     ) {
 
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = themeEmoji)
+            Switch(checked = settingsUiState.darkMode, onCheckedChange = { preferences?.onDarkModeChange() } )
+        }
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 139.dp)
         ) {
 
             Image(
@@ -70,7 +87,7 @@ fun LoginScreen(
             Text(
                 text = "JotDiary",
                 style = MaterialTheme.typography.h1,
-                color = MaterialTheme.colors.primary,
+                color = MaterialTheme.colors.onSurface,
                 fontSize = 30.sp
             )
         }
@@ -98,10 +115,14 @@ fun LoginScreen(
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
+                        tint = MaterialTheme.colors.onSurface
                     )
                 },
                 label = {
-                    Text(text = "Email")
+                    Text(
+                        text = "Email",
+                        color = MaterialTheme.colors.onSurface
+                    )
                 },
                 isError = isError,
                 colors = loginTextfieldStyle
@@ -116,10 +137,14 @@ fun LoginScreen(
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = null,
+                        tint = MaterialTheme.colors.onSurface
                     )
                 },
                 label = {
-                    Text(text = "Password")
+                    Text(
+                        text = "Password",
+                        color = MaterialTheme.colors.onSurface
+                    )
                 },
                 visualTransformation = PasswordVisualTransformation(),
                 isError = isError,
@@ -146,7 +171,11 @@ fun LoginScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Don't have an Account?", fontStyle = MaterialTheme.typography.body1.fontStyle,)
+                Text(
+                    text = "Don't have an Account?",
+                    fontStyle = MaterialTheme.typography.body1.fontStyle,
+                    color = MaterialTheme.colors.surface,
+                )
                 Spacer(modifier = Modifier.size(8.dp))
                 TextButton(onClick = { onNavToSignUpPage.invoke() }) {
                     Text(text = "SignUp", fontSize = 12.sp, color = MaterialTheme.colors.onSurface)
@@ -177,17 +206,18 @@ fun SignUpScreen(
     val context = LocalContext.current
 
     val signupTextfieldStyle: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
-        focusedBorderColor = MaterialTheme.colors.primary,
-        unfocusedBorderColor = MaterialTheme.colors.primary,
-        focusedLabelColor = MaterialTheme.colors.primary,
-        unfocusedLabelColor = MaterialTheme.colors.primary,
-        cursorColor = MaterialTheme.colors.primary,
+        focusedBorderColor = MaterialTheme.colors.onSurface,
+        unfocusedBorderColor = MaterialTheme.colors.onSurface,
+        focusedLabelColor = MaterialTheme.colors.onSurface,
+        unfocusedLabelColor = MaterialTheme.colors.onSurface,
+        cursorColor = MaterialTheme.colors.onSurface,
         errorCursorColor = Color.Red,
         errorLabelColor = Color.Red,
         errorTrailingIconColor = Color.Red,
         errorLeadingIconColor = Color.Red,
-        trailingIconColor = MaterialTheme.colors.primary,
-        leadingIconColor = MaterialTheme.colors.primary,
+        trailingIconColor = MaterialTheme.colors.onSurface,
+        leadingIconColor = MaterialTheme.colors.onSurface,
+        textColor = MaterialTheme.colors.onSurface,
     )
 
     Column(
@@ -230,7 +260,10 @@ fun SignUpScreen(
                 )
             },
             label = {
-                Text(text = "Email")
+                Text(
+                    text = "Email",
+                    color = MaterialTheme.colors.onSurface
+                )
             },
             isError = isError,
             colors = signupTextfieldStyle
@@ -249,7 +282,10 @@ fun SignUpScreen(
                 )
             },
             label = {
-                Text(text = "Password")
+                Text(
+                    text = "Password",
+                    color = MaterialTheme.colors.onSurface
+                )
             },
             visualTransformation = PasswordVisualTransformation(),
             isError = isError,
@@ -269,7 +305,10 @@ fun SignUpScreen(
                 )
             },
             label = {
-                Text(text = "Confirm Password")
+                Text(
+                    text = "Confirm Password",
+                    color = MaterialTheme.colors.onSurface
+                )
             },
             visualTransformation = PasswordVisualTransformation(),
             isError = isError,
@@ -290,7 +329,10 @@ fun SignUpScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Already have an Account?")
+            Text(
+                text = "Already have an Account?",
+                color = MaterialTheme.colors.surface,
+            )
             Spacer(modifier = Modifier)
             TextButton(onClick = { onNavToLoginPage.invoke() }) {
                 Text(text = "Sign In", fontSize = 12.sp, color = MaterialTheme.colors.onSurface)
@@ -310,6 +352,7 @@ fun SignUpScreen(
     }
 }
 
+/*
 @Preview(widthDp = 360, heightDp = 640, showBackground = true, name = "Login Screen")
 @Composable
 fun LoginScreenPreview() {
@@ -321,3 +364,4 @@ fun LoginScreenPreview() {
 fun SignUpScreenPreview() {
     SignUpScreen(onNavToHomePage = {}, onNavToLoginPage = {})
 }
+*/

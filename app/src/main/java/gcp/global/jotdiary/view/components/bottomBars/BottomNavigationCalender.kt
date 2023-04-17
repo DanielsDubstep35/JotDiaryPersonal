@@ -9,8 +9,9 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
@@ -18,9 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 
 @Composable
-fun BottomNavigationHome(
+fun BottomNavigationCalender(
     navToSettingsScreen: () -> Unit,
-    navToCalenderScreen: () -> Unit,
+    navToHomeScreen: () -> Unit,
 ) {
     BottomAppBar(
         backgroundColor = MaterialTheme.colors.primary,
@@ -34,31 +35,39 @@ fun BottomNavigationHome(
         ) {
 
             IconButton(
-                onClick = { navToCalenderScreen.invoke() },
+                onClick = { },
                 enabled = true
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.CalendarMonth,
-                    contentDescription = "Navigate to Calender Screen",
+                    imageVector = Icons.Filled.CalendarMonth,
+                    contentDescription = "Settings",
                     tint = MaterialTheme.colors.onSurface,
-                    modifier = Modifier.alpha(0.3f)
                 )
             }
             
             IconButton(
-                onClick = { },
-                enabled = false
+                onClick = {
+                    navToHomeScreen.invoke()
+                },
+                enabled = true
             ) {
-
+                Icon(
+                    imageVector = Icons.Outlined.Home,
+                    contentDescription = "Home",
+                    tint = MaterialTheme.colors.onSurface,
+                    modifier = Modifier.alpha(0.3f)
+                )
             }
 
             IconButton(
-                onClick = { navToSettingsScreen.invoke() },
+                onClick = {
+                    navToSettingsScreen.invoke()
+                },
                 enabled = true
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Settings,
-                    contentDescription = "Navigate to Settings Screen",
+                    contentDescription = "Settings",
                     tint = MaterialTheme.colors.onSurface,
                     modifier = Modifier.alpha(0.3f)
                 )

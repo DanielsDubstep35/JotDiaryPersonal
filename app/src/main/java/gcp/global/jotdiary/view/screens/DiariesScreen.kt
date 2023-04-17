@@ -37,10 +37,10 @@ import gcp.global.jotdiary.viewmodel.*
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun DiariesScreen(
-    diariesViewmodel: DiariesViewmodel,
+    diariesViewmodel: DiariesViewModel,
     onEntryClick: (entryId: String, diaryId: String) -> Unit,
     diaryId: String,
-    navToEntryPage: () -> Unit,
+    onNavToEntryPage: () -> Unit,
     navController: NavHostController
 ) {
     val diariesUiState = diariesViewmodel.diariesUiState
@@ -66,8 +66,8 @@ fun DiariesScreen(
         scaffoldState = scaffoldState,
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navToEntryPage.invoke() },
-                backgroundColor = Color.Red,
+                onClick = { onNavToEntryPage.invoke() },
+                backgroundColor = MaterialTheme.colors.onSurface,
                 contentColor = MaterialTheme.colors.primary
             ) {
                 Icon(
@@ -77,7 +77,7 @@ fun DiariesScreen(
             }
         },
         topBar = {
-            NestedTopBar(navController = navController, previousScreen = previousScreen, currentScreen = currentScreen)
+            NestedTopBar(navController = navController, currentScreen = currentScreen)
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
@@ -136,7 +136,7 @@ fun DiariesScreen(
                                 ) {
                                     Text(
                                         text = "Delete",
-                                        color = MaterialTheme.colors.primary
+                                        color = MaterialTheme.colors.surface
                                     )
                                 }
                             },
@@ -144,7 +144,7 @@ fun DiariesScreen(
                                 Button(
                                     onClick = { openDialog = false },
                                     colors = ButtonDefaults.buttonColors(
-                                        backgroundColor = Color.Red
+                                        backgroundColor = MaterialTheme.colors.surface
                                     ),
                                 ) {
                                     Text(

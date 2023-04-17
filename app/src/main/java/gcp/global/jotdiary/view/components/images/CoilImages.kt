@@ -31,6 +31,7 @@ fun coilImage(Url: String, Modifier: Modifier, Shape: Shape) {
             contentDescription = "ImagePainter",
             contentScale = ContentScale.Crop
         )
+
     }
 
 }

@@ -1,4 +1,4 @@
-package gcp.global.jotdiary.view.components
+package gcp.global.jotdiary.view.components.bottomBars
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
@@ -12,11 +12,11 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
 import gcp.global.jotdiary.R
-import gcp.global.jotdiary.viewmodel.EntryViewmodel
+import gcp.global.jotdiary.viewmodel.EntryViewModel
 
 @Composable
 fun MoodBottomBar(
-    entryViewModel: EntryViewmodel?,
+    entryViewModel: EntryViewModel?,
     mood: Int
 ) {
 

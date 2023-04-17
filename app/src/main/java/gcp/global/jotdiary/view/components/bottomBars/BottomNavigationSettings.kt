@@ -12,14 +12,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 
 @Composable
-fun BottomNavigationHome(
-    navToSettingsScreen: () -> Unit,
+fun BottomNavigationSettings(
+    navToHomeScreen: () -> Unit,
     navToCalenderScreen: () -> Unit,
 ) {
     BottomAppBar(
@@ -46,21 +45,25 @@ fun BottomNavigationHome(
             }
             
             IconButton(
-                onClick = { },
-                enabled = false
-            ) {
-
-            }
-
-            IconButton(
-                onClick = { navToSettingsScreen.invoke() },
+                onClick = { navToHomeScreen.invoke() },
                 enabled = true
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.Settings,
-                    contentDescription = "Navigate to Settings Screen",
+                    imageVector = Icons.Outlined.Home,
+                    contentDescription = "Navigate to Home Screen",
                     tint = MaterialTheme.colors.onSurface,
                     modifier = Modifier.alpha(0.3f)
+                )
+            }
+
+            IconButton(
+                onClick = { },
+                enabled = true
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = "You are already on the Settings Screen",
+                    tint = MaterialTheme.colors.onSurface
                 )
             }
 

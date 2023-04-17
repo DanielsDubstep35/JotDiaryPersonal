@@ -21,31 +21,33 @@ import androidx.navigation.NavHostController
 import coil.compose.*
 import com.google.firebase.Timestamp
 import com.vanpra.composematerialdialogs.MaterialDialog
+import com.vanpra.composematerialdialogs.MaterialDialogButtons
 import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import gcp.global.jotdiary.view.components.DiaryNestedTopBar
 import gcp.global.jotdiary.view.components.audio.coilImage
-import gcp.global.jotdiary.viewmodel.DiaryViewmodel
+import gcp.global.jotdiary.viewmodel.DiaryUiState
+import gcp.global.jotdiary.viewmodel.DiaryViewModel
 import kotlinx.coroutines.launch
 import java.util.*
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun DiaryScreen(
-    diaryViewmodel: DiaryViewmodel,
+    diaryViewmodel: DiaryViewModel?,
     diaryId: String,
     navController: NavHostController
 ) {
-    val diaryUiState = diaryViewmodel.diaryUiState
+    val diaryUiState = diaryViewmodel?.diaryUiState ?: DiaryUiState()
 
     val isDiaryIdNotBlank = diaryId.isNotBlank()
 
     LaunchedEffect(key1 = Unit) {
         if (isDiaryIdNotBlank) {
-            diaryViewmodel.getDiary(diaryId = diaryId)
+            diaryViewmodel?.getDiary(diaryId = diaryId)
         } else {
-            diaryViewmodel.resetState()
+            diaryViewmodel?.resetState()
         }
     }
 
@@ -58,26 +60,20 @@ fun DiaryScreen(
     val currentScreen = if (isDiaryIdNotBlank) "Edit: ${diaryUiState.title}" else "Add a new Diary"
 
     val outlinedFieldColors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
-        focusedBorderColor = MaterialTheme.colors.primary,
-        unfocusedBorderColor = MaterialTheme.colors.primary,
-        focusedLabelColor = MaterialTheme.colors.primary,
-        unfocusedLabelColor = MaterialTheme.colors.primary,
-        cursorColor = MaterialTheme.colors.primary,
+        focusedBorderColor = MaterialTheme.colors.onSurface,
+        unfocusedBorderColor = MaterialTheme.colors.onSurface,
+        focusedLabelColor = MaterialTheme.colors.onSurface,
+        unfocusedLabelColor = MaterialTheme.colors.onSurface,
+        cursorColor = MaterialTheme.colors.onSurface,
         errorCursorColor = Color.Red,
         errorLabelColor = Color.Red,
         errorTrailingIconColor = Color.Red,
         errorLeadingIconColor = Color.Red,
-        trailingIconColor = MaterialTheme.colors.primary,
-        leadingIconColor = MaterialTheme.colors.primary,
+        trailingIconColor = MaterialTheme.colors.onSurface,
+        leadingIconColor = MaterialTheme.colors.onSurface,
     )
 
     var pickedPhoto by remember { mutableStateOf<Uri?>(null) }
-
-    if (pickedPhoto != null) {
-        diaryViewmodel.onImageChange(pickedPhoto)
-    } else {
-        diaryViewmodel.onImageChange(null)
-    }
 
     val singlePhotoLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -95,7 +91,7 @@ fun DiaryScreen(
     val saveOrUpdate = if (isDiaryIdNotBlank) "Update This Diary" else "Save Your New Diary"
 
     Scaffold(scaffoldState = scaffoldState,
-        topBar = { DiaryNestedTopBar(previousScreen = previousScreen, currentScreen = currentScreen, navController = navController, diaryViewmodel = diaryViewmodel) }
+        topBar = { DiaryNestedTopBar(currentScreen = currentScreen, navController = navController, diaryViewmodel = diaryViewmodel) }
     ) { padding ->
 
 
@@ -128,7 +124,7 @@ fun DiaryScreen(
                     scope.launch {
                         scaffoldState.snackbarHostState
                             .showSnackbar("Added Diary Successfully")
-                        diaryViewmodel.resetDiaryAddedStatus()
+                        diaryViewmodel?.resetDiaryAddedStatus()
                     }
                 }
 
@@ -136,7 +132,7 @@ fun DiaryScreen(
                     scope.launch {
                         scaffoldState.snackbarHostState
                             .showSnackbar("Updated Diary Successfully")
-                        diaryViewmodel.resetDiaryAddedStatus()
+                        diaryViewmodel?.resetDiaryAddedStatus()
                     }
                 }
 
@@ -147,7 +143,7 @@ fun DiaryScreen(
                             text = "Ok",
                             onClick = {
                                 currentDateAndTime = Timestamp(Date(year - 1900, month, day))
-                                diaryViewmodel.onDateChange(currentDateAndTime)
+                                diaryViewmodel?.onDateChange(currentDateAndTime)
                             },
                             textStyle = TextStyle(
                                 color = MaterialTheme.colors.onSurface,
@@ -179,7 +175,6 @@ fun DiaryScreen(
                         year = date.year
                         month = date.monthValue
                         day = date.dayOfMonth
-
                     }
                 }
 
@@ -238,7 +233,7 @@ fun DiaryScreen(
                             text = "Diary Title",
                             style = TextStyle(
                                 fontStyle = MaterialTheme.typography.body1.fontStyle,
-                                color = MaterialTheme.colors.primary,
+                                color = MaterialTheme.colors.onSurface,
                                 fontSize = 24.sp,
                             ),
                             modifier = Modifier.fillMaxWidth()
@@ -247,7 +242,7 @@ fun DiaryScreen(
                         OutlinedTextField(
                             value = diaryUiState.title,
                             onValueChange = {
-                                diaryViewmodel.onTitleChange(it)
+                                diaryViewmodel?.onTitleChange(it)
                             },
                             textStyle = TextStyle(
                                 fontStyle = MaterialTheme.typography.body1.fontStyle,
@@ -273,7 +268,7 @@ fun DiaryScreen(
                             text = "Diary Description",
                             style = TextStyle(
                                 fontStyle = MaterialTheme.typography.body1.fontStyle,
-                                color = MaterialTheme.colors.primary,
+                                color = MaterialTheme.colors.onSurface,
                                 fontSize = 24.sp,
                             ),
                             modifier = Modifier.fillMaxWidth()
@@ -282,7 +277,7 @@ fun DiaryScreen(
                         OutlinedTextField(
                             value = diaryUiState.description,
                             onValueChange = {
-                                diaryViewmodel.onDescriptionChange(it)
+                                diaryViewmodel?.onDescriptionChange(it)
                             },
                             textStyle = TextStyle(
                                 fontStyle = MaterialTheme.typography.body1.fontStyle,
@@ -308,9 +303,10 @@ fun DiaryScreen(
             ) {
 
                 if (pickedPhoto != null) {
-                    coilImage(Uri = pickedPhoto, Modifier.width(300.dp)
-                        .height(250.dp)
-                        .padding(16.dp), Shape = MaterialTheme.shapes.medium)
+                    coilImage(Uri = pickedPhoto, Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .padding(24.dp), Shape = MaterialTheme.shapes.medium)
                 } else {
                     coilImage(Url = diaryUiState.imageUrl, Modifier = Modifier
                         .fillMaxWidth()
@@ -352,32 +348,33 @@ fun DiaryScreen(
 
                     Button(
                         onClick = {
-                            if (pickedPhoto == null && (diaryUiState.imageUri == null && diaryUiState.imageUrl == "")) {
+                            if (pickedPhoto == null && (diaryUiState.imageUrl == "")) {
                                 scope.launch {
-                                    scaffoldState.snackbarHostState.showSnackbar("No Image Selected")
-                                    diaryViewmodel.onImageChangeUrl("https://cdn11.bigcommerce.com/s-3uewkq06zr/images/stencil/1280x1280/products/258/543/fluorescent_pink__88610.1492541080.png?c=2")
-                                    diaryViewmodel.addDiaryUrl()
-                                    diaryViewmodel.resetDiaryAddedStatus()
+                                    diaryViewmodel?.onImageChangeUrl("https://cdn11.bigcommerce.com/s-3uewkq06zr/images/stencil/1280x1280/products/258/543/fluorescent_pink__88610.1492541080.png?c=2")
+                                    diaryViewmodel?.addDiaryUrl()
+                                    diaryViewmodel?.resetDiaryAddedStatus()
+                                    scaffoldState.snackbarHostState.showSnackbar("New Diary Created")
                                 }
-                            } else if (pickedPhoto == null && (diaryUiState.imageUri == null && diaryUiState.imageUrl != "") ) {
+                            } else if (pickedPhoto == null && (diaryUiState.imageUrl != "") ) {
                                 scope.launch {
-                                    scaffoldState.snackbarHostState.showSnackbar("Using Existing Image...")
-                                    diaryViewmodel.onImageChangeUrl(diaryUiState.imageUrl)
-                                    diaryViewmodel.updateDiary(diaryId = diaryId)
+                                    diaryViewmodel?.onImageChangeUrl(diaryUiState.imageUrl)
+                                    diaryViewmodel?.updateDiary(diaryId = diaryId)
+                                    diaryViewmodel?.resetDiaryAddedStatus()
                                     scaffoldState.snackbarHostState.showSnackbar("Diary Updated")
-                                    diaryViewmodel.resetDiaryAddedStatus()
                                 }
-                            } else if (pickedPhoto != null && (diaryUiState.imageUri != null) ) {
+                            } else if (pickedPhoto != null && (diaryUiState.imageUrl == "") ) {
                                 scope.launch {
-                                    scaffoldState.snackbarHostState.showSnackbar("Uploading Image...")
-                                    diaryViewmodel.addDiary()
-                                        scaffoldState.snackbarHostState.showSnackbar("Image Uploaded")
-                                    diaryViewmodel.resetDiaryAddedStatus()
+                                    diaryViewmodel?.onImageChange(pickedPhoto)
+                                    diaryViewmodel?.addDiary()
+                                    diaryViewmodel?.resetDiaryAddedStatus()
+                                    scaffoldState.snackbarHostState.showSnackbar("New Diary Created")
                                 }
-                            } else {
+                            } else if (pickedPhoto != null && (diaryUiState.imageUrl != "") ) {
                                 scope.launch {
-                                    scaffoldState.snackbarHostState.showSnackbar("ERROR 😭")
-                                    diaryViewmodel.updateDiary(diaryId = diaryId)
+                                    diaryViewmodel?.onImageChange(pickedPhoto)
+                                    diaryViewmodel?.updateDiary(diaryId = diaryId)
+                                    diaryViewmodel?.resetDiaryAddedStatus()
+                                    scaffoldState.snackbarHostState.showSnackbar("Diary Updated")
                                 }
                             }
                         },
@@ -400,4 +397,3 @@ fun DiaryScreen(
         }
     }
 }
-

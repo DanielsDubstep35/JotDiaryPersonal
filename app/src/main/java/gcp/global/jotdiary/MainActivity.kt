@@ -8,6 +8,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import gcp.global.jotdiary.view.navigation.Navigation
 import gcp.global.jotdiary.view.theme.JotDiaryTheme
 import gcp.global.jotdiary.viewmodel.*
 
@@ -17,10 +18,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             val loginViewModel = viewModel(modelClass = LoginViewModel::class.java)
             val homeViewModel = viewModel(modelClass = HomeViewModel::class.java)
-            val entryViewModel = viewModel(modelClass = EntryViewmodel::class.java)
-            val diaryViewModel = viewModel(modelClass = DiaryViewmodel::class.java)
-            val diariesViewModel = viewModel(modelClass = DiariesViewmodel::class.java)
-            JotDiaryTheme {
+            val entryViewModel = viewModel(modelClass = EntryViewModel::class.java)
+            val diaryViewModel = viewModel(modelClass = DiaryViewModel::class.java)
+            val diariesViewModel = viewModel(modelClass = DiariesViewModel::class.java)
+            val settingsViewModel = viewModel(modelClass = SettingsViewModel::class.java)
+            val calenderViewModel = viewModel(modelClass = CalenderViewModel::class.java)
+            JotDiaryTheme(
+                darkTheme = settingsViewModel.settingsUiState.darkMode
+            ) {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background) {
@@ -28,8 +33,10 @@ class MainActivity : ComponentActivity() {
                         loginViewModel = loginViewModel,
                         entryViewModel = entryViewModel,
                         homeViewModel = homeViewModel,
-                        diaryViewmodel = diaryViewModel,
-                        diariesViewmodel = diariesViewModel
+                        diaryViewModel = diaryViewModel,
+                        diariesViewModel = diariesViewModel,
+                        settingsViewModel = settingsViewModel,
+                        calenderViewModel = calenderViewModel,
                     )
                 }
             }

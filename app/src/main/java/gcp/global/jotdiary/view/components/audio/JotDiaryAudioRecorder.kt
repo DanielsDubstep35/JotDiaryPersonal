@@ -13,9 +13,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.PermissionChecker.checkSelfPermission
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.isGranted
 import java.io.File
-
+import kotlin.coroutines.CoroutineContext
 
 class JotDiaryAudioRecorder @OptIn(ExperimentalPermissionsApi::class) constructor(
     private val context: Context,
@@ -51,8 +52,10 @@ class JotDiaryAudioRecorder @OptIn(ExperimentalPermissionsApi::class) constructo
         if (!micPermissionState.status.isGranted) {
             // ask for permission
             ActivityCompat.requestPermissions(context as Activity, arrayOf(Manifest.permission.RECORD_AUDIO), 1)
-        } else {
 
+            // You could also use this version:
+            // micPermissionState.launchPermissionRequest()
+        } else {
             if (recorder == null) {
                 createRecorder().apply {
                     recorder = this
@@ -68,6 +71,8 @@ class JotDiaryAudioRecorder @OptIn(ExperimentalPermissionsApi::class) constructo
                     recording = true
                     recorder?.start()
                 }
+            } else {
+                Log.e("JotDiaryAudioRecorder", "Recorder is already running")
             }
         }
     }
@@ -127,7 +132,7 @@ class JotDiaryAudioRecorder @OptIn(ExperimentalPermissionsApi::class) constructo
             for (s in buffer) {
                 if (Math.abs(s.toInt()) > 0) //DETECT VOLUME (IF I BLOW IN THE MIC)
                 {
-                    blow_value = Math.abs(s.toInt())
+                    blow_value = Math.abs(s.toInt()/100)
                     Log.d("///////// BLOW VALUE ////////", "blow value is: $blow_value")
                     ar.stop()
                     return blow_value

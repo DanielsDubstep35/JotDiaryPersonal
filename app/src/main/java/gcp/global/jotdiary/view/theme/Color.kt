@@ -2,39 +2,23 @@ package gcp.global.jotdiary.view.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple200 = Color(0xFFBB86FC)
-val Purple500 = Color(0xFF6200EE)
-val Purple700 = Color(0xFF3700B3)
-val Teal200 = Color(0xFF03DAC5)
-
-val Beige = Color(0xFFD9B9AD)
-val BeigeLight = Color(0xFFF2EAE4)
-val BeigeDark = Color(0xFFBF9D95)
+// Normal Colors
+val BeigeLightest = Color(0xFFF2EAE4)
+val BeigeLighter = Color(0xFFD9B9AD)
+val Beige = Color(0xFFBF9D95)
 val BeigeDarker = Color(0xFFA67A76)
 val BeigeDarkest = Color(0xFF734440)
 
-val OceanBlue = Color(0xFF4184BF)
-val OceanBlueLight = Color(0xFF418FBF)
-val OceanBlueDark = Color(0xFF30698C)
-val OceanBlueDarker = Color(0xFF204A5A)
-val OceanBlueDarkest = Color(0xFF1A5048)
+// Fancy Colors
+val ColourfulBlack = Color(0xFF0D0D0D)
+val ColourfulYellow = Color(0xFFF2E635)
+val ColourfulLightBlue = Color(0xFF44F2F2)
+val ColourfulBlue = Color(0xFF99D9F2)
+val ColourfulPink = Color(0xFFF1ACF2)
 
-val Green = Color(0xFF45CC84)
-val GreenLight = Color(0xFF52F29D)
-val GreenDark = Color(0xFF4EE695)
-val GreenDarker = Color(0xFF38A66B)
-val GreenDarkest = Color(0xFF236642)
-
-val JotDiary = Color(0xFF00D1FF)
-val JotDiaryLight = Color(0xFF77FFFE)
-val JotDiaryDark = Color(0xFF00A3CC)
-val JotDiaryDarker = Color(0xFF006680)
-val JotDiaryDarkest = Color(0xFF004A5D)
-
-val JotDiary2 = Color(0xFFD60000)
-val JotDiary2Light = Color(0xFFFBCCCC)
-val JotDiary2Dark = Color(0xFFB30000)
-val JotDiary2Darker = Color(0xFF4D1915)
-val JotDiary2Darkest = Color(0xFF33110E)
-
-val lightGray = Color(0xFF8A8A8A)
+// Dark Theme Version 2
+val DarkModeLightest = Color(0xFFF24B59)
+val DarkModeLighter = Color(0xFF79C4F2)
+val DarkMode = Color(0xFF1A1E26)
+val DarkModeDarker = Color(0xFF343A40)
+val DarkModeDarkest = Color(0xFF08090D)

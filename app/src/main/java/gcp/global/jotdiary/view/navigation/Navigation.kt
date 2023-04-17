@@ -1,22 +1,22 @@
-package gcp.global.jotdiary
+package gcp.global.jotdiary.view.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import gcp.global.jotdiary.view.navigation.Route
 import gcp.global.jotdiary.view.screens.*
 import gcp.global.jotdiary.viewmodel.*
 
 @Composable
 fun Navigation(
-    navController: NavHostController = rememberNavController(),
     loginViewModel: LoginViewModel,
-    entryViewModel: EntryViewmodel,
+    entryViewModel: EntryViewModel,
     homeViewModel: HomeViewModel,
-    diaryViewmodel: DiaryViewmodel,
-    diariesViewmodel: DiariesViewmodel,
+    diaryViewModel: DiaryViewModel,
+    diariesViewModel: DiariesViewModel,
+    settingsViewModel: SettingsViewModel,
+    calenderViewModel: CalenderViewModel
 ) {
     val navController = rememberNavController()
 
@@ -24,13 +24,15 @@ fun Navigation(
         navController = navController,
         startDestination = Route.login.name
     ) {
-        authGraph(navController, loginViewModel)
+        authGraph(navController, loginViewModel, settingsViewModel)
         homeGraph(
             navController = navController,
             entryViewModel,
             homeViewModel,
-            diaryViewmodel,
-            diariesViewmodel
+            diaryViewModel,
+            diariesViewModel,
+            settingsViewModel,
+            calenderViewModel
         )
     }
 }
@@ -38,6 +40,7 @@ fun Navigation(
 fun NavGraphBuilder.authGraph(
     navController: NavHostController,
     loginViewModel: LoginViewModel,
+    settingsViewmodel: SettingsViewModel
 ) {
     navigation(
         startDestination = "signin",
@@ -54,14 +57,16 @@ fun NavGraphBuilder.authGraph(
                     }
                 },
                 loginViewModel = loginViewModel,
-            ) {
-                navController.navigate("signup") {
-                    launchSingleTop = true
-                    popUpTo("signin") {
-                        inclusive = true
+                onNavToSignUpPage = {
+                    navController.navigate("signup") {
+                        launchSingleTop = true
+                        popUpTo("signin") {
+                            inclusive = true
+                        }
                     }
-                }
-            }
+                },
+                preferences = settingsViewmodel
+            )
         }
         composable(route = "signup") {
             SignUpScreen(
@@ -72,20 +77,23 @@ fun NavGraphBuilder.authGraph(
                         }
                     }
                 },
-                loginViewModel = loginViewModel
-            ) {
-                navController.navigate("signin")
-            }
+                loginViewModel = loginViewModel,
+                onNavToLoginPage = {
+                    navController.navigate("signin")
+                }
+            )
         }
     }
 }
 
 fun NavGraphBuilder.homeGraph(
     navController: NavHostController,
-    entryViewModel: EntryViewmodel,
+    entryViewModel: EntryViewModel,
     homeViewModel: HomeViewModel,
-    diaryViewmodel: DiaryViewmodel,
-    diariesViewmodel: DiariesViewmodel
+    diaryViewmodel: DiaryViewModel,
+    diariesViewmodel: DiariesViewModel,
+    settingsViewmodel: SettingsViewModel,
+    calenderViewModel: CalenderViewModel
 ) {
     navigation(
         startDestination = "home",
@@ -101,24 +109,31 @@ fun NavGraphBuilder.homeGraph(
                         launchSingleTop = true
                     }
                 },
-                navToDiaryPage = {
+                onNavToDiaryPage = {
                     navController.navigate("diary")
                 },
-                navToDiaryEditPage = { diaryId ->
+                onNavToDiaryEditPage = { diaryId ->
                     navController.navigate(
                         "diaryEdit?id=$diaryId"
                     ) {
                         launchSingleTop = true
                     }
                 },
-            ) {
-                navController.navigate("signin") {
-                    launchSingleTop = true
-                    popUpTo(0) {
-                        inclusive = true
+                onNavToSettingsPage = {
+                    navController.navigate("settings")
+                },
+                onNavToLoginPage = {
+                    navController.navigate("signin") {
+                        launchSingleTop = true
+                        popUpTo(0) {
+                            inclusive = true
+                        }
                     }
-                }
-            }
+                },
+                onNavToCalenderPage = {
+                    navController.navigate("calender")
+                },
+            )
         }
         composable(
             route = "diaryEdit?id={diaryId}",
@@ -150,7 +165,7 @@ fun NavGraphBuilder.homeGraph(
                             launchSingleTop = true
                         }
                     },
-                    navToEntryPage = {
+                    onNavToEntryPage = {
                         navController.navigate(
                             route = "entry?id=${diary.arguments?.getString("diaryId")}/"
                         )
@@ -185,6 +200,45 @@ fun NavGraphBuilder.homeGraph(
                 entryId = entry.arguments?.getString("entryId") as String,
                 diaryId = entry.arguments?.getString("diaryId") as String,
                 navController = navController
+            )
+        }
+        composable(
+            route = "settings",
+        ) {
+            SettingsScreen(
+                settingsViewmodel = settingsViewmodel,
+                onNavToCalenderPage = {
+                    navController.navigate("calender")
+                }
+            ) {
+                navController.navigate("home")
+            }
+        }
+        composable(
+            route = "calender",
+        ) {
+            CalenderScreen(
+                calenderViewModel = calenderViewModel,
+                onNavToHomePage = {
+                    navController.navigate("home")
+                },
+                onNavToSettingsPage = {
+                    navController.navigate("settings")
+                },
+                onDiaryClick = { diaryId ->
+                    navController.navigate(
+                        "diary?id=$diaryId"
+                    ) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavToDiaryEditPage = { diaryId ->
+                    navController.navigate(
+                        "diaryEdit?id=$diaryId"
+                    ) {
+                        launchSingleTop = true
+                    }
+                },
             )
         }
     }

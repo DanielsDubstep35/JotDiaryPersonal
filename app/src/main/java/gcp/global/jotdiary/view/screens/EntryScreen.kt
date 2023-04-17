@@ -12,8 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,7 +20,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -33,11 +32,10 @@ import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import gcp.global.jotdiary.view.components.EntryNestedTopBar
-import gcp.global.jotdiary.view.components.MoodBottomBar
 import gcp.global.jotdiary.view.components.audio.*
-import gcp.global.jotdiary.view.theme.JotDiaryTheme
+import gcp.global.jotdiary.view.components.bottomBars.MoodBottomBar
 import gcp.global.jotdiary.viewmodel.EntryUiState
-import gcp.global.jotdiary.viewmodel.EntryViewmodel
+import gcp.global.jotdiary.viewmodel.EntryViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -48,7 +46,7 @@ import java.util.*
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun EntryScreen(
-    entryViewModel: EntryViewmodel,
+    entryViewModel: EntryViewModel?,
     entryId: String,
     diaryId: String,
     navController: NavHostController
@@ -73,7 +71,7 @@ fun EntryScreen(
 
     val currentScreen = if (isEntryIdNotBlank) entryUiState.name else "Add a new Entry"
 
-    val saveOrUpdate = if (isEntryIdNotBlank) "Update" else "Save"
+    val saveOrUpdate = if (isEntryIdNotBlank) Icons.Filled.Update else Icons.Filled.Save
 
     var recordedAudio by remember {
         mutableStateOf<Uri?>(null)
@@ -101,15 +99,15 @@ fun EntryScreen(
     val audioPermissionsState = rememberPermissionState(permission = android.Manifest.permission.RECORD_AUDIO)
 
     if (pickedPhoto != null) {
-        entryViewModel.onImageChange(pickedPhoto)
+        entryViewModel?.onImageChange(pickedPhoto)
     } else {
-        entryViewModel.onImageChange(null)
+        entryViewModel?.onImageChange(null)
     }
 
     if (pickedAudio != null) {
-        entryViewModel.onAudioChange(pickedAudio)
+        entryViewModel?.onAudioChange(pickedAudio)
     } else {
-        entryViewModel.onAudioChange(null)
+        entryViewModel?.onAudioChange(null)
     }
 
     val singlePhotoLauncher = rememberLauncherForActivityResult(
@@ -135,7 +133,7 @@ fun EntryScreen(
     var audioLevels by remember { mutableStateOf(0) }
 
     Scaffold(scaffoldState = scaffoldState,
-        topBar = { EntryNestedTopBar(previousScreen = previousScreen, currentScreen = currentScreen, entryViewmodel = entryViewModel, onBackPress = {
+        topBar = { EntryNestedTopBar(currentScreen = currentScreen, entryViewmodel = entryViewModel, onBackPress = {
 
             entryAudioFile.delete()
 
@@ -156,15 +154,23 @@ fun EntryScreen(
                 audioRecorder.let {
                     try {
                         scope.apply {
-                            launch { it.start(entryAudioFile) }
                             launch {
-                                while (it.recording) {
-                                    audioLevels = it.getAudioLevels()
-                                    delay(500)
+                                it.start(entryAudioFile)
+                                //delay(400)
+                            }.invokeOnCompletion { throwable ->
+                                scope.launch {
+                                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                                    scaffoldState.snackbarHostState.showSnackbar("Recording Started")
+                                }
+                                scope.launch {
+                                    while (it.recording) {
+                                        delay(500)
+                                        audioLevels = it.getAudioLevels()
+                                    }
                                 }
                             }
-                            launch { scaffoldState.snackbarHostState.currentSnackbarData?.dismiss() }
-                            launch { scaffoldState.snackbarHostState.showSnackbar("Recording Started") }
+
+                            Log.e("Entry Screen, Line 249", "prepare() failed")
                         }
                     } catch (e: IOException) {
                         Log.e("Entry Screen, Line 249", "prepare() failed")
@@ -208,7 +214,7 @@ fun EntryScreen(
                             Url = entryUiState.imageUrl,
                             Modifier = Modifier
                                 .fillMaxWidth()
-                                .fillMaxHeight(),
+                                .height(250.dp),
                             Shape = MaterialTheme.shapes.medium
                         )
                     } else if (entryUiState.imageUri != null) {
@@ -236,7 +242,7 @@ fun EntryScreen(
                             entryUiState.imageUrl = ""
                         },
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Color.Red
+                            backgroundColor = MaterialTheme.colors.onSurface
                         ),
                         modifier = if (entryUiState.imageUrl != "" || entryUiState.imageUri != null) Modifier.alpha(1f) else Modifier
                             .alpha(0f)
@@ -245,7 +251,7 @@ fun EntryScreen(
                     ) {
                         Text(
                             text = "Delete Image",
-                            color = MaterialTheme.colors.primary
+                            color = MaterialTheme.colors.surface
                         )
                     }
                 },
@@ -255,12 +261,12 @@ fun EntryScreen(
                             imageDialog = false
                         },
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = MaterialTheme.colors.onSurface
+                            backgroundColor = MaterialTheme.colors.surface
                         ),
                     ) {
                         Text(
                             text = "Stop Viewing",
-                            color = MaterialTheme.colors.primary
+                            color = MaterialTheme.colors.onSurface
                         )
                     }
                 }
@@ -274,19 +280,24 @@ fun EntryScreen(
                 .padding(padding)
         ) {
             if (entryUiState.entryAddedStatus) {
-                scope.launch {
-                    scaffoldState.snackbarHostState
-                        .showSnackbar("Added Entry Successfully")
-                    entryViewModel?.resetEntryAddedStatus()
-                    navController.popBackStack()
+                scope.apply {
+                    launch { entryViewModel?.resetEntryAddedStatus() }
+                    launch {
+                        navController.popBackStack()
+                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                        scaffoldState.snackbarHostState.showSnackbar("Added Entry Successfully")
+                    }
                 }
             }
 
             if (entryUiState.updateEntryStatus) {
                 scope.apply {
-                    launch { scaffoldState.snackbarHostState.showSnackbar("Updated Entry Successfully") }
                     launch { entryViewModel?.resetEntryAddedStatus() }
-                    launch { navController.popBackStack() }
+                    launch {
+                        navController.popBackStack()
+                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                        scaffoldState.snackbarHostState.showSnackbar("Updated Entry Successfully")
+                    }
                 }
             }
             
@@ -391,12 +402,17 @@ fun EntryScreen(
                     },
                     modifier = Modifier
                         .padding(16.dp)
-                        .fillMaxSize()
+                        .fillMaxSize(),
+                    textStyle = TextStyle(
+                        fontStyle = MaterialTheme.typography.body1.fontStyle,
+                        color = MaterialTheme.colors.onSurface,
+                        fontSize = 16.sp,
+                    )
                 )
             }
 
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -416,7 +432,7 @@ fun EntryScreen(
                                         scope.apply {
                                             launch {
                                                 scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-                                                scaffoldState.snackbarHostState.showSnackbar("Playing Audio")
+                                                scaffoldState.snackbarHostState.showSnackbar("Playing Audio from the Cloud")
                                             }
                                         }
                                         playerClicked = !playerClicked
@@ -431,7 +447,7 @@ fun EntryScreen(
                                         scope.apply {
                                             launch {
                                                 scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-                                                scaffoldState.snackbarHostState.showSnackbar("Playing Audio")
+                                                scaffoldState.snackbarHostState.showSnackbar("Playing Audio from the Device")
                                             }
                                         }
                                         playerClicked = !playerClicked
@@ -472,8 +488,10 @@ fun EntryScreen(
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = "Play Audio",
-                        tint = MaterialTheme.colors.secondary,
-                        modifier = Modifier.size(20.dp)
+                        tint = MaterialTheme.colors.onSurface,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .background(color = MaterialTheme.colors.primary)
                     )
                 }
 
@@ -483,6 +501,7 @@ fun EntryScreen(
                         .wrapContentSize()
                         .padding(16.dp)
                 ) {
+                    /*
                     Text(
                         text = "View Image",
                         style = TextStyle(
@@ -491,57 +510,77 @@ fun EntryScreen(
                             fontSize = 16.sp,
                         )
                     )
+                    */
+                    Icon(
+                        imageVector = Icons.Filled.Preview,
+                        contentDescription = "View Image",
+                        tint = MaterialTheme.colors.onSurface,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .background(color = MaterialTheme.colors.primary)
+                    )
                 }
                 
-                Text(text = "$audioLevels")
+                Button(
+                    onClick = {
+                        scope.launch {
+                            scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                            scaffoldState.snackbarHostState.showSnackbar("This Number Checks Audio Levels! 🤩🤩🤩")
+                        }
+                    },
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .padding(16.dp),
+                    //enabled = false,
+                ) {
+                    Text(
+                        text = "$audioLevels",
+                        style = TextStyle(
+                            fontStyle = MaterialTheme.typography.body1.fontStyle,
+                            color = MaterialTheme.colors.onSurface,
+                            fontSize = 16.sp,
+                        ),
+                        modifier = Modifier.size(20.dp).background(color = MaterialTheme.colors.primary),
+                        textAlign = TextAlign.Center
+                    )
+                }
 
                 Button(
                     onClick = {
-                        if (pickedPhoto == null && (entryUiState.imageUri == null && entryUiState.imageUrl == "")) {
+                        if (pickedPhoto == null && (entryUiState.imageUrl == "")) {
                             scope.apply {
                                 launch {
-                                    entryViewModel.onImageChangeUrl("https://cdn11.bigcommerce.com/s-3uewkq06zr/images/stencil/1280x1280/products/258/543/fluorescent_pink__88610.1492541080.png?c=2")
-                                    entryViewModel.addEntryUrl(diaryId = diaryId)
-                                }
-                                launch {
+                                    entryViewModel?.onImageChangeUrl("https://cdn11.bigcommerce.com/s-3uewkq06zr/images/stencil/1280x1280/products/258/543/fluorescent_pink__88610.1492541080.png?c=2")
+                                    entryViewModel?.addEntryUrl(diaryId = diaryId)
+                                    entryViewModel?.resetEntryAddedStatus()
                                     scaffoldState.snackbarHostState.showSnackbar("New Entry Created")
                                 }
-                                launch {
-                                    entryViewModel.resetEntryAddedStatus()
-                                }
                             }
-                        } else if (pickedPhoto == null && (entryUiState.imageUri == null && entryUiState.imageUrl != "") ) {
+                        } else if (pickedPhoto == null && (entryUiState.imageUrl != "") ) {
                             scope.apply {
                                 launch {
-                                    entryViewModel.onImageChangeUrl(entryUiState.imageUrl)
-                                    entryViewModel.updateEntry(entryId = entryId, diaryId = diaryId)
-                                }
-                                launch {
+                                    entryViewModel?.onImageChangeUrl(entryUiState.imageUrl)
+                                    entryViewModel?.updateEntry(entryId = entryId, diaryId = diaryId)
+                                    entryViewModel?.resetEntryAddedStatus()
                                     scaffoldState.snackbarHostState.showSnackbar("Entry Updated")
                                 }
-                                launch {
-                                    entryViewModel.resetEntryAddedStatus()
-                                }
                             }
-                        } else if (pickedPhoto != null && (entryUiState.imageUri != null) ) {
+                        } else if (pickedPhoto != null && (entryUiState.imageUrl == "") ) {
                             scope.apply {
                                 launch {
-                                    entryViewModel.addEntry(diaryId = diaryId)
+                                    entryViewModel?.onImageChange(pickedPhoto)
+                                    entryViewModel?.addEntry(diaryId = diaryId)
+                                    entryViewModel?.resetEntryAddedStatus()
+                                    scaffoldState.snackbarHostState.showSnackbar("New Entry Created")
                                 }
+                            }
+                        } else if (pickedPhoto != null && (entryUiState.imageUrl != "") ) {
+                            scope.apply {
                                 launch {
+                                    entryViewModel?.onImageChange(pickedPhoto)
+                                    entryViewModel?.updateEntry(entryId = entryId, diaryId = diaryId)
+                                    entryViewModel?.resetEntryAddedStatus()
                                     scaffoldState.snackbarHostState.showSnackbar("Entry Updated")
-                                }
-                                launch {
-                                    entryViewModel.resetEntryAddedStatus()
-                                }
-                            }
-                        } else {
-                            scope.apply {
-                                launch {
-                                    scaffoldState.snackbarHostState.showSnackbar("ERROR 😭")
-                                }
-                                launch {
-                                    entryViewModel.updateEntry(entryId = entryId, diaryId = diaryId)
                                 }
                             }
                         }
@@ -550,6 +589,7 @@ fun EntryScreen(
                         .wrapContentSize()
                         .padding(16.dp)
                 ) {
+                    /*
                     Text(
                         text = saveOrUpdate,
                         style = TextStyle(
@@ -558,17 +598,29 @@ fun EntryScreen(
                             fontSize = 16.sp,
                         )
                     )
+
+                     */
+                    Icon(
+                        imageVector = saveOrUpdate,
+                        contentDescription = "Save or Update Entry",
+                        tint = MaterialTheme.colors.onSurface,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .background(color = MaterialTheme.colors.primary)
+                    )
                 }
             }
         }
     }
 }
 
+/*
 @Preview(widthDp = 360, heightDp = 640)
 @Composable
 fun EntryScreenPreview() {
     JotDiaryTheme() {
-        EntryScreen(entryViewModel = EntryViewmodel(), entryId = "", diaryId = "", navController = NavHostController(LocalContext.current)
+        EntryScreen(entryViewModel = EntryViewModel(), entryId = "", diaryId = "", navController = NavHostController(LocalContext.current)
         )
     }
 }
+*/

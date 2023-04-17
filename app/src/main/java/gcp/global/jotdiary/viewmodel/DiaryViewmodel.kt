@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
  * from the StorageRepository and display it on the screen. different actions can
  * then be performed, such as updating, deleting, or adding a new diary.
  **/
-class DiaryViewmodel (
+class DiaryViewModel (
     private val repository: StorageRepository = StorageRepository(),
 ): ViewModel() {
 

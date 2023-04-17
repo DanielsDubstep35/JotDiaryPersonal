@@ -14,7 +14,7 @@ import gcp.global.jotdiary.model.repository.StorageRepository
  * the StorageRepository and display it on the screen. This can then be updated and
  * deleted, or you could even add a new diary
  **/
-class EntryViewmodel(
+class EntryViewModel(
     private val repository: StorageRepository = StorageRepository(),
 ):ViewModel() {
 
