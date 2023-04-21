@@ -22,10 +22,39 @@ class CalenderViewModel(
     var calenderUiState by mutableStateOf(CalenderUiState())
         private set
 
+    private val _searchState = mutableStateOf(SearchBarState.Closed)
+    val searchState: SearchBarState
+        get() = _searchState.value
+
+    private val _searchingState = mutableStateOf(SearchingState.Initial)
+    val searchingState: SearchingState
+        get() = _searchingState.value
+
+    private val _searchQuery = mutableStateOf("")
+    val searchQuery: String
+        get() = _searchQuery.value
+
+    fun onSearchBarChange(option: SearchBarState) {
+        _searchState.value = option
+    }
+
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
+        calenderUiState = calenderUiState.copy(query = query)
+    }
+
+    fun onSearchingStateChange(state: SearchingState) {
+        _searchingState.value = state
+    }
+
     fun onDatePicked(dateMinusDay: Timestamp, dateExtraDay: Timestamp) = viewModelScope.launch {
         calenderUiState = calenderUiState.copy(dateMinusDay = dateMinusDay)
         calenderUiState = calenderUiState.copy(dateExtraDay = dateExtraDay)
         getDiariesByDate(repository.user()?.uid.toString(), calenderUiState.dateMinusDay, calenderUiState.dateExtraDay)
+    }
+
+    fun onSearchQuery() = viewModelScope.launch {
+        getDiariesByName(repository.user()?.uid.toString(), calenderUiState.query)
     }
 
     /**
@@ -38,6 +67,17 @@ class CalenderViewModel(
      **/
     private fun getDiariesByDate(userId: String, dateMinusDay: Timestamp, dateExtraDay: Timestamp) = viewModelScope.launch {
         repository.getUserDiariesByDate(userId, dateMinusDay, dateExtraDay).collect {
+            if (it != Resources.Success(emptyList<Diaries>()) ) {
+                calenderUiState = calenderUiState.copy(filteredDiariesList = it)
+                calenderUiState = calenderUiState.copy(diariesPresent = true)
+            } else {
+                calenderUiState = calenderUiState.copy(diariesPresent = false)
+            }
+        }
+    }
+
+    private fun getDiariesByName(userId: String, query: String) = viewModelScope.launch {
+        repository.getUserDiariesByName(userId, query).collect {
             if (it != Resources.Success(emptyList<Diaries>()) ) {
                 calenderUiState = calenderUiState.copy(filteredDiariesList = it)
                 calenderUiState = calenderUiState.copy(diariesPresent = true)
@@ -72,5 +112,16 @@ data class CalenderUiState(
     val filteredDiariesList: Resources<List<Diaries>> = Resources.Loading(),
     val diaryDeletedStatus: Boolean = false,
     val selectedDiary:Diaries? = null,
-    val diariesPresent: Boolean = false
+    val diariesPresent: Boolean = false,
+    val query: String = "",
 )
+
+enum class SearchBarState {
+    Open,
+    Closed
+}
+
+enum class SearchingState {
+    Initial,
+    Searching
+}

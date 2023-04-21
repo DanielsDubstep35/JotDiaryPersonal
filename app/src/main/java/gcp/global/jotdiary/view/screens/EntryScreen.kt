@@ -17,7 +17,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -67,13 +66,11 @@ fun EntryScreen(
 
     val scaffoldState = rememberScaffoldState()
 
-    val previousScreen = "Entries"
-
     val currentScreen = if (isEntryIdNotBlank) entryUiState.name else "Add a new Entry"
 
     val saveOrUpdate = if (isEntryIdNotBlank) Icons.Filled.Update else Icons.Filled.Save
 
-    var recordedAudio by remember {
+    val recordedAudio by remember {
         mutableStateOf<Uri?>(null)
     }
 
@@ -115,20 +112,13 @@ fun EntryScreen(
         onResult = { uri -> pickedPhoto = uri }
     )
 
-    // Camera permission state
-    val micPermissionState = rememberPermissionState(
-        android.Manifest.permission.RECORD_AUDIO
-    )
-
-    var clickedCount = 0
-
     // Audio Stuff
     val context = LocalContext.current
-    var entryAudioFile = File(context.getExternalFilesDir(null), "file.mp3")
+    val entryAudioFile = File(context.getExternalFilesDir(null), "file.mp3")
     var recorderClicked = false
     var playerClicked = true
 
-    val audioPlayer = JotDiaryAudioPlayer(context)
+    val audioPlayer = JotDiaryAudioPlayer()
     val audioRecorder = JotDiaryAudioRecorder(context, audioPermissionsState)
     var audioLevels by remember { mutableStateOf(0) }
 
@@ -152,42 +142,32 @@ fun EntryScreen(
 
             if(recorderClicked) {
                 audioRecorder.let {
-                    try {
-                        scope.apply {
-                            launch {
-                                it.start(entryAudioFile)
-                                //delay(400)
-                            }.invokeOnCompletion { throwable ->
-                                scope.launch {
-                                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-                                    scaffoldState.snackbarHostState.showSnackbar("Recording Started")
-                                }
-                                scope.launch {
-                                    while (it.recording) {
-                                        delay(500)
-                                        audioLevels = it.getAudioLevels()
-                                    }
-                                }
+                    scope.apply {
+                        launch {
+                            it.start(entryAudioFile)
+                            //delay(400)
+                        }.invokeOnCompletion { throwable ->
+                            scope.launch {
+                                scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                                scaffoldState.snackbarHostState.showSnackbar("Recording Started")
                             }
 
-                            Log.e("Entry Screen, Line 249", "prepare() failed")
+                            scope.launch {
+                                while (it.recording) {
+                                    delay(500)
+                                    audioLevels = it.getAudioLevels()
+                                }
+                            }
                         }
-                    } catch (e: IOException) {
-                        Log.e("Entry Screen, Line 249", "prepare() failed")
                     }
                 }
             } else {
                 audioRecorder.apply {
-                    try {
-                        this.stop(entryAudioFile)
-                        scope.apply {
-                            launch { scaffoldState.snackbarHostState.currentSnackbarData?.dismiss() }
-                            launch { scaffoldState.snackbarHostState.showSnackbar("Recording Stopped") }
-                        }
+                    scope.launch {
+                        stop(entryAudioFile)
                         pickedAudio = entryAudioFile.toUri()
-
-                    } catch (e: IOException) {
-                        Log.e("Entry Screen, Line 249", "prepare() failed")
+                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                        scaffoldState.snackbarHostState.showSnackbar("Recording Stopped")
                     }
                 }
             }
@@ -280,24 +260,18 @@ fun EntryScreen(
                 .padding(padding)
         ) {
             if (entryUiState.entryAddedStatus) {
-                scope.apply {
-                    launch { entryViewModel?.resetEntryAddedStatus() }
-                    launch {
-                        navController.popBackStack()
-                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-                        scaffoldState.snackbarHostState.showSnackbar("Added Entry Successfully")
-                    }
+                scope.launch {
+                    scaffoldState.snackbarHostState
+                        .showSnackbar("Added Entry Successfully")
+                    entryViewModel?.resetEntryAddedStatus()
                 }
             }
 
             if (entryUiState.updateEntryStatus) {
-                scope.apply {
-                    launch { entryViewModel?.resetEntryAddedStatus() }
-                    launch {
-                        navController.popBackStack()
-                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-                        scaffoldState.snackbarHostState.showSnackbar("Updated Entry Successfully")
-                    }
+                scope.launch {
+                    scaffoldState.snackbarHostState
+                        .showSnackbar("Updated Entry Successfully")
+                    entryViewModel?.resetEntryAddedStatus()
                 }
             }
             
@@ -550,7 +524,7 @@ fun EntryScreen(
                         if (pickedPhoto == null && (entryUiState.imageUrl == "")) {
                             scope.apply {
                                 launch {
-                                    entryViewModel?.onImageChangeUrl("https://cdn11.bigcommerce.com/s-3uewkq06zr/images/stencil/1280x1280/products/258/543/fluorescent_pink__88610.1492541080.png?c=2")
+                                    entryViewModel?.onImageChangeUrl("https://static.vecteezy.com/system/resources/previews/013/096/093/original/notebook-paper-background-horizontal-lined-note-document-vector.jpg")
                                     entryViewModel?.addEntryUrl(diaryId = diaryId)
                                     entryViewModel?.resetEntryAddedStatus()
                                     scaffoldState.snackbarHostState.showSnackbar("New Entry Created")

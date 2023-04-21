@@ -13,11 +13,18 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.PermissionChecker.checkSelfPermission
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
-import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.isGranted
 import java.io.File
-import kotlin.coroutines.CoroutineContext
 
+/**
+ * JotDiaryAudioRecorder class.
+ *
+ * This class has two functions.
+ * It can start recording audio.
+ * And stop recording audio.
+ * It First Creates a MediaRecorder instance, and then it fills a given file with
+ * the audio data. when the user stops recording, the file is saved.
+ */
 class JotDiaryAudioRecorder @OptIn(ExperimentalPermissionsApi::class) constructor(
     private val context: Context,
     private val micPermissionState: PermissionState
@@ -84,14 +91,11 @@ class JotDiaryAudioRecorder @OptIn(ExperimentalPermissionsApi::class) constructo
      */
     fun stop(outputFile: File) {
 
-        if (recorder != null) {
-            recording = false
-            recorder?.stop()
-            recorder?.reset()
-            recorder?.release()
-            recorder = null
-        }
-
+        recording = false
+        recorder?.stop()
+        recorder?.reset()
+        recorder?.release()
+        recorder = null
 
         // get file size
         fileSize = File(outputFile.toURI()).length().toInt()
@@ -130,16 +134,14 @@ class JotDiaryAudioRecorder @OptIn(ExperimentalPermissionsApi::class) constructo
         while (recorder != null) {
             ar.read(buffer, 0, minSize)
             for (s in buffer) {
-                if (Math.abs(s.toInt()) > 0) //DETECT VOLUME (IF I BLOW IN THE MIC)
+                if (Math.abs(s.toInt()) > 0)
                 {
                     blow_value = Math.abs(s.toInt()/100)
-                    Log.d("///////// BLOW VALUE ////////", "blow value is: $blow_value")
                     ar.stop()
                     return blow_value
                 }
             }
         }
-        Log.d("///////// RECORDER VALUE ////////", "recorder value is: $recorder")
         return blow_value
     }
 

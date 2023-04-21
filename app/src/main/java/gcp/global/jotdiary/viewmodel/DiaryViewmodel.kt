@@ -203,10 +203,10 @@ class DiaryViewModel (
  */
 data class DiaryUiState(
     val diaryId: String = "",
-    val title: String = "",
+    val title: String = "Default Diary",
     val imageUri: Uri? = null,
     val imageUrl: String = "",
-    val description: String = "",
+    val description: String = "This Diary is about...",
     val createdDate: Timestamp = Timestamp.now(),
     val diaryAddedStatus:Boolean = false,
     val updateDiaryStatus:Boolean = false,
