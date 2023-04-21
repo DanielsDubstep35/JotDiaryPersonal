@@ -28,17 +28,39 @@ const val USERS_COLLECTION_REF = "Users"
  *
  * This class is used to get data from the StorageRepository
  * and display it on the screen. The State, aswell as the data is controlled from here.
+ *
+ * CRUD opertions for diaries and entries.
  **/
 class StorageRepository() {
 
     var storage = FirebaseStorage.getInstance()
 
+    /**
+     * user()
+     * Accesses the db and gets the user.
+     * @return the currently logged in user.
+     */
     fun user() = Firebase.auth.currentUser
 
+    /**
+     * hasUser()
+     * Checks if the user is logged in
+     * @returns Boolean value - true or false
+     */
     fun hasUser(): Boolean = Firebase.auth.currentUser != null
 
+    /**
+     * getUserId()
+     * Accesses the database and retrieves the user´s id.
+     * @return - returns the id as a String. If String is empty (""), user wasn´t found.
+     */
     fun getUserId(): String = Firebase.auth.currentUser?.uid.orEmpty()
 
+    /**
+     * getDiariesRef()
+     * Accesses the database, retrives the userId and finds the diaries related to the userId.
+     * @return - CollectionReference
+     */
     fun getDiariesRef(): CollectionReference {
 
         val diariesRef = Firebase.firestore.collection(USERS_COLLECTION_REF).document(getUserId()).collection(DIARIES_COLLECTION_REF)
@@ -51,6 +73,15 @@ class StorageRepository() {
         return diariesRef
     }
 
+    /**
+     * getEntriesRef(diaryId: String)
+     * Accesses the database, retrives the userId and finds the diaries related to the userId.
+     * Finds the specific entry/moment based on the diaryId, and returns the entries/moments.
+     * This method is used in a try catch in getUserEntries(diaryId) method.
+     * @see getUserEntries
+     * @param diaryId - String
+     * @returns CollectionReference
+     */
     fun getEntriesRef(diaryId: String): CollectionReference {
 
         val entriesRef = Firebase.firestore.collection(USERS_COLLECTION_REF).document(getUserId()).collection(DIARIES_COLLECTION_REF).document(diaryId).collection(ENTRIES_COLLECTION_REF)
@@ -58,6 +89,18 @@ class StorageRepository() {
         return entriesRef
     }
 
+    /**
+     * getUserEntries(diaryId: String)
+     *  Accesses the database, retrives the userId and finds the diaries related to the userId.
+     *  Finds the specific entry/moment based on the diaryId, and checks if the entries/moments != null.
+     *  If it´s null, it will throw a exception.
+     *  If its successful, it sends the List of Entries to the channel.
+     *
+     *  @param diaryId - String
+     *  @throws Resources.Failure
+     *  @return Flow
+     *  @see Flow
+     */
     fun getUserEntries(
         diaryId: String
     ): Flow<Resources<List<Entries>>> = callbackFlow {
@@ -85,6 +128,14 @@ class StorageRepository() {
         }
     }
 
+    /**
+     * getEntry
+     * Get a specific entry based on a diaryÍd and entryId.
+     *
+     * @param diaryId
+     * @param entryId
+     * @returns Unit: OnSuccess = Entries. OnFailure = Throwable.
+     */
     fun getEntry(
         diaryId: String,
         entryId: String,
@@ -103,6 +154,20 @@ class StorageRepository() {
 
     }
 
+    /**
+     * addEntry()
+     * Adds a entry/moment to a specific diary
+     *
+     * @param diaryId - String
+     * @param name - String
+     * @param description - String
+     * @param moood - Int
+     * @param audioUri - Uri? ("?" meaning it can be null)
+     * @param imageUri - Uri?
+     * @param date - Timestamp
+     *
+     * @return Unit - Success or Failure
+     */
     fun addEntry(
         diaryId: String,
         name: String,
@@ -300,6 +365,20 @@ class StorageRepository() {
             }
     }
 
+    /**
+     * updateEntry()
+     * Updates a specific entry/moment.
+     *
+     * @param diaryId - String
+     * @param entryId - String
+     * @param name - String
+     * @param description - String
+     * @param mood - String
+     * @param audioUri - Uri? ("?" meaning it can be null)
+     * @param imageUri - Uri?
+     * @param date - Timestamp
+     * @return Unit - Success or Failure
+     */
     fun updateEntry(
         diaryId: String,
         entryId: String,
@@ -399,6 +478,17 @@ class StorageRepository() {
         }
     }
 
+    /**
+     * getUserDiariesByDate()
+     * Accesses the database. Finds the diaries related to the userId.
+     * Makes a list with all the diaries between the two parameters. dateExtraDay and dateMinusDay.
+     *
+     * @param userId - String
+     * @param dateExtraDay - Timestamp
+     * @param dateMinusDay - Timestamp
+     *
+     * @return List of Diaries
+     */
     fun getUserDiariesByDate(
         userId: String,
         dateMinusDay: Timestamp,
@@ -434,6 +524,15 @@ class StorageRepository() {
         }
     }
 
+    /**
+     * getDiary()
+     * Uses the method getDiaresRef() to get all the diaries.
+     * Selects a Specific Diary based on the diaryId.
+     *
+     * @see getDiariesRef
+     * @param diaryId - String
+     * @return Unit - Success = Diaries. Failure = throwable error.
+     */
     fun getDiary(
         diaryId: String,
         onError: (Throwable?) -> Unit,
@@ -451,6 +550,17 @@ class StorageRepository() {
 
     }
 
+    /**
+     * addDiary()
+     * Adds a diary to a user´s account.
+     *
+     * @param userId - String
+     * @param title - String
+     * @param imageUri - Uri? ("?" meaning it can be null)
+     * @param description - String
+     * @param createdDate - Timestamp
+     * @return Unit - Boolean Success or Failure.
+     */
     fun addDiary(
         userId: String,
         title: String,
@@ -459,6 +569,9 @@ class StorageRepository() {
         createdDate: Timestamp,
         onComplete: (Boolean) -> Unit
     ) {
+        /*
+         Checks if the image is uploaded.
+         */
         val documentId = getDiariesRef().document().id
         var addFile = imageUri
         val addDiaryImageRef = storage.reference.child("Users/${getUserId()}/Images/$documentId")
@@ -486,6 +599,16 @@ class StorageRepository() {
         }
     }
 
+    /**
+     * addDiaryUrl()
+     * This method adds a diary and makes the document pathway.
+     *
+     * @param userId - String
+     * @param title - String
+     * @param description - String
+     * @param createdDate - Timestamp
+     * @return - Unit (Boolean)
+     */
     fun addDiaryUrl(
         userId: String,
         title: String,
@@ -514,6 +637,13 @@ class StorageRepository() {
 
     }
 
+    /**
+     * deleteDiary()
+     * Deletes the document referred to by this DocumentReference that is retrived from from the diaryId.
+     *
+     * @param diaryId - String
+     * @return Unit - Boolean
+     */
     fun deleteDiary(
         diaryId: String,
         onComplete: (Boolean) -> Unit
@@ -525,6 +655,17 @@ class StorageRepository() {
             }
     }
 
+    /**
+     * updateDiary()
+     *
+     * @param diaryId - String
+     * @param title - String
+     * @param imageUri - Uri? ("?" meaning it can be null)
+     * @param imageUrl - String -default picture
+     * @param description - String
+     * @param createdDate - Timestamp
+     * @return Unit = OnResult - Boolean
+     */
     fun updateDiary(
         diaryId: String,
         title: String,
@@ -557,12 +698,16 @@ class StorageRepository() {
 
                 val imageUrl = Url.toString()
 
+                /*
+                    <String, Any> = < "attributes from Diaries class", param from this methods >
+                */
                 val updateData = hashMapOf<String, Any>(
                     "diaryTitle" to title,
                     "diaryDescription" to description,
                     "diaryCreatedDate" to createdDate,
                     "imageUrl" to imageUrl
                 )
+
 
                 getDiariesRef().document(diaryId)
                     .update(updateData)
@@ -590,6 +735,11 @@ class StorageRepository() {
         }
     }
 
+    /**
+     * signOut()
+     * Accesses the Firebase database.
+     * Signs out the current user and clears it from the disk cache.
+     */
     fun signOut() = Firebase.auth.signOut()
 
 }
