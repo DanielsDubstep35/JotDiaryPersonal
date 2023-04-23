@@ -16,11 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -29,9 +25,8 @@ import androidx.compose.ui.unit.sp
 import gcp.global.jotdiary.R
 import gcp.global.jotdiary.model.models.Diaries
 import gcp.global.jotdiary.model.repository.Resources
-import gcp.global.jotdiary.view.components.bottomBars.BottomNavigationHome
 import gcp.global.jotdiary.view.components.audio.coilImage
-import gcp.global.jotdiary.view.theme.JotDiaryTheme
+import gcp.global.jotdiary.view.components.bottomBars.BottomNavigationHome
 import gcp.global.jotdiary.viewmodel.HomeUiState
 import gcp.global.jotdiary.viewmodel.HomeViewModel
 

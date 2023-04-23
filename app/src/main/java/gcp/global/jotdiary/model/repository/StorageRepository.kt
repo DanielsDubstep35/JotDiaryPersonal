@@ -161,7 +161,7 @@ class StorageRepository() {
      * @param diaryId - String
      * @param name - String
      * @param description - String
-     * @param moood - Int
+     * @param mood - Int
      * @param audioUri - Uri? ("?" meaning it can be null)
      * @param imageUri - Uri?
      * @param date - Timestamp
@@ -179,13 +179,13 @@ class StorageRepository() {
         onComplete: (Boolean) -> Unit
     ) {
         val documentId = getEntriesRef(diaryId).document().id
-        var addAudioFile = audioUri
+        val addAudioFile = audioUri
         val addEntryAudioRef = storage.reference.child("Users/${getUserId()}/Audios/$documentId")
 
-        var addImageFile = imageUri
+        val addImageFile = imageUri
         val addEntryImageRef = storage.reference.child("Users/${getUserId()}/Images/$documentId")
 
-        var entry = Entries(
+        val entry = Entries(
             entryId = documentId,
             entryName = name,
             entryDescription = description,
@@ -213,7 +213,7 @@ class StorageRepository() {
              */
             val audioDeferred = async {
                 if (addAudioFile != null) {
-                    addEntryAudioRef.putFile(addAudioFile!!).await()
+                    addEntryAudioRef.putFile(addAudioFile).await()
                     addEntryAudioRef.downloadUrl.await().toString()
                 } else {
                     ""
@@ -227,7 +227,7 @@ class StorageRepository() {
              */
             val imageDeferred = async {
                 if (addImageFile != null) {
-                    addEntryImageRef.putFile(addImageFile!!).await()
+                    addEntryImageRef.putFile(addImageFile).await()
                     addEntryImageRef.downloadUrl.await().toString()
                 } else {
                     ""
@@ -268,6 +268,20 @@ class StorageRepository() {
         }
     }
 
+    /**
+     * updateEntry()
+     * Updates a entry/moment to a specific diary
+     *
+     * @param diaryId - String
+     * @param entryId - String
+     * @param name - String
+     * @param description - String
+     * @param mood - Int
+     * @param audioUri - Uri? ("?" meaning it can be null)
+     * @param imageUri - Uri?
+     * @param date - Timestamp
+     * @return Unit - on Task Complete
+     */
     fun addEntryUrl(
         diaryId: String,
         name: String,
@@ -279,10 +293,10 @@ class StorageRepository() {
         onComplete: (Boolean) -> Unit
     ) {
         val documentId = getEntriesRef(diaryId).document().id
-        var addAudioFile = audioUri
+        val addAudioFile = audioUri
         val addEntryAudioRef = storage.reference.child("Users/${getUserId()}/Audios/$documentId")
 
-        var entry = Entries(
+        val entry = Entries(
             entryId = documentId,
             entryName = name,
             entryDescription = description,
@@ -310,7 +324,7 @@ class StorageRepository() {
              */
             val audioDeferred = async {
                 if (addAudioFile != null) {
-                    addEntryAudioRef.putFile(addAudioFile!!).await()
+                    addEntryAudioRef.putFile(addAudioFile).await()
                     addEntryAudioRef.downloadUrl.await().toString()
                 } else {
                     ""
@@ -350,6 +364,14 @@ class StorageRepository() {
         }
     }
 
+    /**
+     * deleteEntry()
+     * Deletes a specific entry/moment.
+     *
+     * @param diaryId - String
+     * @param entryId - String
+     * @return Unit - on Task Complete
+     */
     fun deleteEntry(
         diaryId: String,
         entryId: String,
@@ -393,16 +415,16 @@ class StorageRepository() {
         onResult: (Boolean) -> Unit
     ) {
 
-        var updateAudioFile = audioUri
+        val updateAudioFile = audioUri
         val updateEntryAudioRef = storage.reference.child("Users/${getUserId()}/Audios/$diaryId")
 
-        var updateImageFile = imageUri
+        val updateImageFile = imageUri
         val updateEntryImageRef = storage.reference.child("Users/${getUserId()}/Images/$diaryId")
         // var updateUploadTask = updateEntryImageRef.putFile(updateImageFile!!)
 
         // updateUploadTask.isComplete
 
-        var updateData = hashMapOf<String, Any>(
+        val updateData = hashMapOf<String, Any>(
             "entryName" to name,
             "entryDescription" to description,
             "entryMood" to mood,
@@ -428,12 +450,12 @@ class StorageRepository() {
                 }
             }
 
-            val audioUrl = audioDeferred.await()
-            val imageUrl = imageDeferred.await()
+            val audiosUrl = audioDeferred.await()
+            val imagesUrl = imageDeferred.await()
 
             val addAudioAndImageEntry = updateData.apply {
-                put("entryAudioUrl", audioUrl)
-                put("entryImageUrl", imageUrl)
+                put("entryAudioUrl", audiosUrl)
+                put("entryImageUrl", imagesUrl)
             }
 
             getEntriesRef(diaryId)
@@ -445,9 +467,14 @@ class StorageRepository() {
         }
     }
 
-
-    // Diary Functions
-
+    /**
+     * getUserDiaries()
+     * Accesses the database. Finds the diaries related to the userId
+     * and returns a list of diaries.
+     *
+     * @param userId - String
+     * @return Flow<Resources<List<Diaries>>> - Success or Failure
+     */
     fun getUserDiaries(
         userId: String
     ): Flow<Resources<List<Diaries>>> = callbackFlow {
@@ -456,8 +483,8 @@ class StorageRepository() {
         try {
 
             snapshotStateListener = getDiariesRef()
-                .orderBy("diaryId")
                 .whereEqualTo("userId", userId)
+                .orderBy("diaryId")
                 .addSnapshotListener{ snapshot, e ->
                     val response = if (snapshot != null) {
                         val diaries = snapshot.toObjects(Diaries::class.java)
@@ -499,9 +526,53 @@ class StorageRepository() {
         try {
             snapshotStateListener = getDiariesRef()
                 //.orderBy("diaryCreatedDate")
+                .whereEqualTo("userId", userId)
                 .whereGreaterThan("diaryCreatedDate", dateMinusDay)
                 .whereLessThan("diaryCreatedDate", dateExtraDay)
+                .addSnapshotListener{ snapshot, e ->
+                    val response = if (snapshot != null) {
+                        val diaries = snapshot.toObjects(Diaries::class.java)
+                        Log.e("//////////", "diaries: $diaries")
+                        Resources.Success(data = diaries)
+                    } else {
+                        Log.e("//////////", "Error getting documents: ", e)
+                        Resources.Failure(throwable = e)
+                    }
+                    trySend(response)
+                }
+
+        } catch (e: Exception) {
+            trySend(Resources.Failure(e.cause))
+            e.printStackTrace()
+        }
+
+        awaitClose {
+            snapshotStateListener?.remove()
+        }
+    }
+
+    /**
+     * getUserDiariesByName()
+     * Accesses the database. Finds the diaries related to the userId.
+     * Gets a list of diaries that contains the query in the diaryTitle.
+     *
+     * @param userId - String
+     * @param query - String
+     *
+     * @return List of Diaries
+     */
+    fun getUserDiariesByName(
+        userId: String,
+        query: String
+    ): Flow<Resources<List<Diaries>>> = callbackFlow {
+        var snapshotStateListener:ListenerRegistration? = null
+
+        try {
+            snapshotStateListener = getDiariesRef()
+                //.orderBy("diaryName")
                 .whereEqualTo("userId", userId)
+                .whereGreaterThanOrEqualTo("diaryTitle", query)
+                .whereLessThanOrEqualTo("diaryTitle", query + "\uf8ff")
                 .addSnapshotListener{ snapshot, e ->
                     val response = if (snapshot != null) {
                         val diaries = snapshot.toObjects(Diaries::class.java)
@@ -573,7 +644,7 @@ class StorageRepository() {
          Checks if the image is uploaded.
          */
         val documentId = getDiariesRef().document().id
-        var addFile = imageUri
+        val addFile = imageUri
         val addDiaryImageRef = storage.reference.child("Users/${getUserId()}/Images/$documentId")
 
         addDiaryImageRef.putFile(addFile!!).addOnSuccessListener {
@@ -679,9 +750,9 @@ class StorageRepository() {
         Log.e("//////////", "updateDiary: $imageUri")
         Log.e("//////////", "updateDiary: $imageUrl")
 
-        var updateFile: Uri?
-        var updateDiaryImageRef: StorageReference
-        var updateUploadTask: UploadTask
+        val updateFile: Uri?
+        val updateDiaryImageRef: StorageReference
+        val updateUploadTask: UploadTask
 
         /**
          * if there is no imageUri, then the image is a url online
@@ -690,13 +761,13 @@ class StorageRepository() {
 
             updateFile = imageUri
             updateDiaryImageRef = storage.reference.child("Users/${getUserId()}/Images/${diaryId}")
-            updateUploadTask = updateDiaryImageRef.putFile(updateFile!!)
+            updateUploadTask = updateDiaryImageRef.putFile(updateFile)
 
             updateUploadTask.isComplete
 
             updateDiaryImageRef.downloadUrl.addOnSuccessListener { Url ->
 
-                val imageUrl = Url.toString()
+                val imagesUrl = Url.toString()
 
                 /*
                     <String, Any> = < "attributes from Diaries class", param from this methods >
@@ -705,7 +776,7 @@ class StorageRepository() {
                     "diaryTitle" to title,
                     "diaryDescription" to description,
                     "diaryCreatedDate" to createdDate,
-                    "imageUrl" to imageUrl
+                    "imageUrl" to imagesUrl
                 )
 
 
@@ -718,13 +789,11 @@ class StorageRepository() {
             }
         } else {
 
-            val ExistingImageUrl = imageUrl
-
             val updateData = hashMapOf<String, Any>(
                 "diaryTitle" to title,
                 "diaryDescription" to description,
                 "diaryCreatedDate" to createdDate,
-                "imageUrl" to ExistingImageUrl
+                "imageUrl" to imageUrl
             )
 
             getDiariesRef().document(diaryId)
@@ -744,6 +813,16 @@ class StorageRepository() {
 
 }
 
+/**
+ *
+ * Resources class:
+ * This class is used to provide a state of the data. If data is being retrieved,
+ * the loading state is used. If the data is successfully retrieved, the success state
+ * is used, and data is returned. If the data is not retrieved, the failure state is used,
+ *
+ * @param data - Task
+ * @param throwable - Throwable
+ */
 sealed class Resources<T>(
     val data: T? = null,
     val throwable: Throwable? = null,

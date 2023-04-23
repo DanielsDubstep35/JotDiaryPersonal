@@ -2,7 +2,6 @@ package gcp.global.jotdiary.view.screens
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -11,7 +10,6 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,10 +20,14 @@ import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import gcp.global.jotdiary.model.models.Diaries
 import gcp.global.jotdiary.model.repository.Resources
+import gcp.global.jotdiary.view.components.CalenderScreenTopBar
 import gcp.global.jotdiary.view.components.GeneralTopBar
+import gcp.global.jotdiary.view.components.SearchQueryTopBar
 import gcp.global.jotdiary.view.components.bottomBars.BottomNavigationCalender
 import gcp.global.jotdiary.viewmodel.CalenderUiState
 import gcp.global.jotdiary.viewmodel.CalenderViewModel
+import gcp.global.jotdiary.viewmodel.SearchBarState
+import gcp.global.jotdiary.viewmodel.SearchingState
 import java.util.*
 
 @Composable
@@ -48,66 +50,47 @@ fun CalenderScreen(
         mutableStateOf(null)
     }
 
-
     val calendar = GregorianCalendar.getInstance()
     var day = calendar.get(Calendar.DAY_OF_MONTH)
     var month = calendar.get(Calendar.MONTH)
     var year = calendar.get(Calendar.YEAR)
     // var chosenDateandTime: Timestamp
 
+    LaunchedEffect(key1 = Unit) {
+    }
+
     Scaffold(
-        topBar = { GeneralTopBar(currentScreen = "Calender") },
+        topBar = {
+            when (calenderViewModel?.searchState) {
+                SearchBarState.Closed -> {
+                    CalenderScreenTopBar(
+                        currentScreen = "Calender",
+                        search = {
+                            calenderViewModel.onSearchingStateChange(SearchingState.Searching)
+                            calenderViewModel.onSearchBarChange(SearchBarState.Open)
+                        },
+                        calender = {
+                            calenderViewModel.onSearchingStateChange(SearchingState.Searching)
+                            dialogState.show()
+                            calenderViewModel.resetState()
+                        }
+                    )
+                }
+                SearchBarState.Open -> {
+                    SearchQueryTopBar(calenderViewModel = calenderViewModel)
+                }
+                else -> {
+                    GeneralTopBar(
+                        currentScreen = "Calender",
+                    )
+                }
+            }
+                 },
         bottomBar = { BottomNavigationCalender(navToSettingsScreen = onNavToSettingsPage, navToHomeScreen = onNavToHomePage) }
     ) {
         Column(
             modifier = Modifier.padding(it)
         ) {
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colors.primary)
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Card(
-                    backgroundColor = MaterialTheme.colors.background,
-                    shape = MaterialTheme.shapes.small,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .wrapContentSize()
-                ) {
-                    Text(
-                        text = "Search Calenders by Date!",
-                        style = TextStyle(
-                            fontFamily = MaterialTheme.typography.body1.fontFamily,
-                            fontSize = 16.sp,
-                        ),
-                        color = MaterialTheme.colors.onSurface,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-                Button(
-                    onClick = {
-                        dialogState.show()
-                        calenderViewModel?.resetState()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = MaterialTheme.colors.onSurface,
-                        contentColor = MaterialTheme.colors.primary
-                    ),
-                ) {
-                    Text(
-                        text = "Pick a Date!",
-                        color = MaterialTheme.colors.primary,
-                        style = TextStyle(
-                            fontFamily = MaterialTheme.typography.body1.fontFamily,
-                            fontSize = 16.sp,
-                        ),
-                    )
-                }
-            }
 
             MaterialDialog(
                 dialogState = dialogState,
@@ -156,11 +139,30 @@ fun CalenderScreen(
             when (calenderUiState.filteredDiariesList) {
 
                 is Resources.Loading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .wrapContentSize(align = Alignment.Center)
-                    )
+                    when (calenderViewModel?.searchingState) {
+                        SearchingState.Initial -> {
+                            Text(
+                                text = "Press any of the Top Bar Buttons to Search!",
+                                color = MaterialTheme.colors.onSurface,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .wrapContentSize(align = Alignment.Center)
+                            )
+                        }
+                        SearchingState.Searching -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .wrapContentSize(align = Alignment.Center)
+                            )
+                        } else -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .wrapContentSize(align = Alignment.Center)
+                            )
+                        }
+                    }
                 }
 
                 is Resources.Success -> {

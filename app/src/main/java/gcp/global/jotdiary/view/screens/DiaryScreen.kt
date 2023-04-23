@@ -21,7 +21,6 @@ import androidx.navigation.NavHostController
 import coil.compose.*
 import com.google.firebase.Timestamp
 import com.vanpra.composematerialdialogs.MaterialDialog
-import com.vanpra.composematerialdialogs.MaterialDialogButtons
 import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
@@ -54,8 +53,6 @@ fun DiaryScreen(
     val scope = rememberCoroutineScope()
 
     val scaffoldState = rememberScaffoldState()
-
-    val previousScreen = "Home"
 
     val currentScreen = if (isDiaryIdNotBlank) "Edit: ${diaryUiState.title}" else "Add a new Diary"
 
@@ -350,7 +347,7 @@ fun DiaryScreen(
                         onClick = {
                             if (pickedPhoto == null && (diaryUiState.imageUrl == "")) {
                                 scope.launch {
-                                    diaryViewmodel?.onImageChangeUrl("https://cdn11.bigcommerce.com/s-3uewkq06zr/images/stencil/1280x1280/products/258/543/fluorescent_pink__88610.1492541080.png?c=2")
+                                    diaryViewmodel?.onImageChangeUrl("https://i.pinimg.com/originals/09/76/f3/0976f36bdb7a621383d266c5328ce4a4.jpg")
                                     diaryViewmodel?.addDiaryUrl()
                                     diaryViewmodel?.resetDiaryAddedStatus()
                                     scaffoldState.snackbarHostState.showSnackbar("New Diary Created")
