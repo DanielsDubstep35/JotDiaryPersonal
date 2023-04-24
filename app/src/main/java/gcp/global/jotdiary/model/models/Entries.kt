@@ -8,8 +8,8 @@ import com.google.firebase.Timestamp
  */
 data class Entries(
     val entryId: String = "",
-    val entryName: String = "Diary Entry",
-    val entryDescription: String = "Describe yourself :)",
+    val entryName: String = "Title",
+    val entryDescription: String = "How was your day :)",
     val entryMood: Int = 4,
     val entryAudioUrl: String = "",
     val entryImageUrl: String = "",
