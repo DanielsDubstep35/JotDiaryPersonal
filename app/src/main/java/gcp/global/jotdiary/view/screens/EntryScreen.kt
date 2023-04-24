@@ -40,8 +40,9 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 import java.util.*
+import kotlin.time.Duration.Companion.hours
 
-@OptIn(ExperimentalPermissionsApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun EntryScreen(
@@ -87,7 +88,11 @@ fun EntryScreen(
     var day = calendar.get(Calendar.DAY_OF_MONTH)
     var month = calendar.get(Calendar.MONTH)
     var year = calendar.get(Calendar.YEAR)
+    var hour = calendar.get(Calendar.HOUR_OF_DAY)
+    var minute = calendar.get(Calendar.MINUTE)
+    var second = calendar.get(Calendar.SECOND)
     var currentDateAndTime: Timestamp
+    var currentDateAndTimeWithTime: Timestamp
 
     var pickedPhoto by remember { mutableStateOf<Uri?>(null) }
     var pickedAudio by remember { mutableStateOf<Uri?>(null) }

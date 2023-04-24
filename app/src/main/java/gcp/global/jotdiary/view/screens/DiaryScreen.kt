@@ -85,7 +85,7 @@ fun DiaryScreen(
 
     var currentDateAndTime: Timestamp
 
-    val saveOrUpdate = if (isDiaryIdNotBlank) "Update This Diary" else "Save Your New Diary"
+    val saveOrUpdate = if (isDiaryIdNotBlank) "Update Diary" else "Save Diary"
 
     Scaffold(scaffoldState = scaffoldState,
         topBar = { DiaryNestedTopBar(currentScreen = currentScreen, navController = navController, diaryViewmodel = diaryViewmodel) }
