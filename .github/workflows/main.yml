@@ -15,4 +15,4 @@ jobs:
       uses: spectralops/spectral-github-action@v3
       with:
         spectral-dsn: ${{ env.SPECTRAL_DSN }}
-        spectral-args: github -k repo -t ${{ secrets.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 }} https://github.com/SpectralOps/spectral-github-action --include-tags base,audit --ok
+        spectral-args: github -k repo -t ${{ secrets.SPECTRAL_DSN }} https://github.com/SpectralOps/spectral-github-action --include-tags base,audit --ok
