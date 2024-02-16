@@ -15,4 +15,4 @@ jobs:
       uses: spectralops/spectral-github-action@v3
       with:
         spectral-dsn: ${{ env.SPECTRAL_DSN }}
-        spectral-args: scan --ok  --include-tags base,audit
+        spectral-args: github -k repo -t ${{ secrets.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 }} https://github.com/SpectralOps/spectral-github-action --include-tags base,audit --ok
